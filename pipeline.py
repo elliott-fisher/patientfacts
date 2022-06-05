@@ -13,7 +13,7 @@ def covid_pos_person(covid_pos_sample, location, manifest, person_lds):
     df = (
         covid_pos_sample
             .join(
-                person_lds.select(  'person_id','year_of_birth','month_of_birth','day_of_birth','ethnicity_concept_name',
+                person_lds.select(  'year_of_birth','month_of_birth','day_of_birth','ethnicity_concept_name',
                                     'race_concept_name','gender_concept_name','location_id','data_partner_id'),
                 covid_pos_sample.person_id == person_lds.person_id,
                 how = "left"
