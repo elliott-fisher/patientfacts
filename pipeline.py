@@ -8,6 +8,6 @@ def patient_sample(ALL_COVID_POS_PERSONS):
 
     proportion_of_patients_to_use = .001
 
-    return = ALL_COVID_POS_PERSONS.sample(False, proportion_of_patients_to_use, 111)
+    return ALL_COVID_POS_PERSONS.sample(False, proportion_of_patients_to_use, 111)
     
 
