@@ -61,11 +61,18 @@ def covid_pos_sample(ALL_COVID_POS_PERSONS):
 )
 def trans_covid_pos_person(covid_pos_person):
 
-    #calculate date of birth
+    """
+    Calculates date of birth
+    Note: Sets null values of the following to 1:
+        - year_of_birth
+        - month_of_birth
+        - day_of_birth
+    """
     df = (
         covid_pos_person
             .withColumn("new_year_of_birth",  
-                        F.when(covid_pos_person.year_of_birth.isNull(),1).otherwise(covid_pos_person.year_of_birth))
+                        F.when(covid_pos_person.year_of_birth.isNull(),1)
+                        .otherwise(covid_pos_person.year_of_birth))
             .withColumn("new_month_of_birth", F.when(covid_pos_person.month_of_birth.isNull(),1).otherwise(covid_pos_person.month_of_birth))
             .withColumn("new_day_of_birth", F.when(covid_pos_person.day_of_birth.isNull(),1).otherwise(covid_pos_person.day_of_birth))   
     )
