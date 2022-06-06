@@ -78,7 +78,7 @@ def trans_covid_pos_person(covid_pos_person):
             .withColumn("date_of_birth", F.concat_ws("-", F.col("new_year_of_birth"), F.col("new_month_of_birth"), F.col("new_day_of_birth")))
             .withColumn("date_of_birth", F.to_date("date_of_birth", format=None))
             .withColumn("age_at_covid", F.floor(F.months_between("first_diagnosis_date", "date_of_birth", roundOff=False)/12))
-    ).drop()
+    ).drop(new_year_of_birth)
     
      
     return cpp_date_columns_df
