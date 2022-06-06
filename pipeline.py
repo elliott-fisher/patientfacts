@@ -23,10 +23,11 @@ def covid_pos_person(covid_pos_sample, location, manifest, person_lds):
 
     df = (
         df.join(
-            location.select('location_id','city','state','zip','county'),
-            df.location_id == location.location_id,
+            #location.select('location_id','city','state','zip','county'),
+            #df.location_id == location.location_id,
+            ['location_id']
             how = "left"    
-        ).drop(df.location_id)
+        )#.drop(df.location_id)
     )
 
     return df
