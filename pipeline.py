@@ -16,7 +16,7 @@ def covid_pos_person(covid_pos_sample, location, manifest, person_lds):
                                 'location_id','data_partner_id'),
             covid_pos_sample.person_id == person_lds.person_id,
             how = "left"
-        ).drop(person_lds.person_id).withColumnRenamed("location_id","p_location_id").show(n=20) 
+        ).drop(person_lds.person_id).withColumnRenamed("location_id","p_location_id") 
     )
     
 
