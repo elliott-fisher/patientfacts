@@ -66,9 +66,8 @@ def trans_covid_pos_person(covid_pos_person):
         covid_pos_person
             .withColumn("new_year_of_birth",  F.when(covid_pos_person.year_of_birth.isNull(),1).otherwise(covid_pos_person.year_of_birth))
             .withColumn("new_month_of_birth", F.when(covid_pos_person.month_of_birth.isNull(),1).otherwise(covid_pos_person.month_of_birth))
-    )        
-    #df = df.withColumn("new_day_of_birth", F.when(df.day_of_birth.isNull(),1).otherwise(df.day_of_birth))   
-
+            .withColumn("new_day_of_birth", F.when(covid_pos_person.day_of_birth.isNull(),1).otherwise(covid_pos_person.day_of_birth))   
+    )
     
      
     return df
