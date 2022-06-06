@@ -28,18 +28,17 @@ def covid_pos_person(covid_pos_sample, location, manifest, person_lds):
         ).drop(location.location_id)
     )
 
-    return location_df
-
-    """
-    df = (
-        df2.join(
+    manifest_df = (
+        location_df.join(
             manifest.select('data_partner_id','run_date','cdm_name','cdm_version','shift_date_yn','max_num_shift_days'),
-            df.
-        )
+            location_df.data_partner_id == manifest.data_partner_id,
+            how = "left" 
+        ).drop(manifest.data_partner_id)
 
     )
-    return df3
-    """
+
+    return manifest_df  
+
 # location: 'location_id','city','state','zip','county'
 # manaifest data_partner_id','run_date','cdm_name','cdm_version','shift_date_yn','max_num_shift_days
             
