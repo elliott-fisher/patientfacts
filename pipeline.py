@@ -62,7 +62,7 @@ def covid_pos_sample(ALL_COVID_POS_PERSONS):
 def trans_covid_pos_person(covid_pos_person):
 
     """
-    Calculates date of birth
+    Calculates date of birth and age at Covid+
     Note: Sets null values of the following to 1:
         - year_of_birth
         - month_of_birth
@@ -81,6 +81,7 @@ def trans_covid_pos_person(covid_pos_person):
                         .otherwise(covid_pos_person.day_of_birth))
             .withColumn("date_of_birth", F.concat_ws("-", F.col("new_year_of_birth"), F.col("new_month_of_birth"), F.col("new_day_of_birth")))
             .withColumn("date_of_birth", F.to_date("date_of_birth", format=None))
+            .withColumn("age_at_covid", F.floor(F.months_between("first_diagnosis_date", "date_of_birth", roundOff=False)/12))
     )
     
      
