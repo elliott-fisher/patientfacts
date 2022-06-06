@@ -10,39 +10,35 @@ from pyspark.sql import functions as F
 )
 def covid_pos_person(covid_pos_sample, location, manifest, person_lds):
 
-    person_df = (
+    with_person_df = (
         covid_pos_sample.join(
             person_lds.select(  'person_id','year_of_birth','month_of_birth','day_of_birth',
                                 'ethnicity_concept_name','race_concept_name','gender_concept_name',
                                 'location_id','data_partner_id'),
             covid_pos_sample.person_id == person_lds.person_id,
             how = "left"
-        ).drop(person_lds.person_id) #.withColumnRenamed("location_id","p_location_id") 
+        ).drop(person_lds.person_id)  
     )
     
 
-    location_df = (
-        person_df.join(
+    with_location_df = (
+        with_person_df.join(
             location.select('location_id','city','state','zip','county'),
-            person_df.location_id == location.location_id,
+            with_person_df.location_id == location.location_id,
             how = "left"    
         ).drop(location.location_id)
     )
 
-    manifest_df = (
-        location_df.join(
+    with_manifest_df = (
+        with_location_df.join(
             manifest.select('data_partner_id','run_date','cdm_name','cdm_version','shift_date_yn','max_num_shift_days'),
-            location_df.data_partner_id == manifest.data_partner_id,
+            with_location_df.data_partner_id == manifest.data_partner_id,
             how = "left" 
         ).drop(manifest.data_partner_id)
 
     )
 
-    return manifest_df  
-
-# location: 'location_id','city','state','zip','county'
-# manaifest data_partner_id','run_date','cdm_name','cdm_version','shift_date_yn','max_num_shift_days
-            
+    return with_manifest_df
 
 @transform_pandas(
     Output(rid="ri.foundry.main.dataset.57d6f26d-f01a-454d-bb1c-93408d9fdd51"),
@@ -82,7 +78,7 @@ def trans_covid_pos_person(covid_pos_person):
             .withColumn("date_of_birth", F.concat_ws("-", F.col("new_year_of_birth"), F.col("new_month_of_birth"), F.col("new_day_of_birth")))
             .withColumn("date_of_birth", F.to_date("date_of_birth", format=None))
             .withColumn("age_at_covid", F.floor(F.months_between("first_diagnosis_date", "date_of_birth", roundOff=False)/12))
-    )
+    ).drop()
     
      
     return cpp_date_columns_df
