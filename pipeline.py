@@ -8,7 +8,7 @@
     person_lds=Input(rid="ri.foundry.main.dataset.50cae11a-4afb-457d-99d4-55b4bc2cbe66")
 )
 def covid_pos_person(covid_pos_sample, location, manifest, person_lds):
-    person = person_lds
+
     
     person_df = (
         covid_pos_sample.join(
