@@ -62,7 +62,7 @@ def covid_pos_sample(ALL_COVID_POS_PERSONS):
 def trans_covid_pos_person(covid_pos_person):
 
     #calculate date of birth
-    df = covid_pos_person.withColumn("new_year_of_birth", F.when(df.year_of_birth.isNull(),1).otherwise(df.year_of_birth))
+    df = covid_pos_person.withColumn("new_year_of_birth", F.when(covid_pos_person.year_of_birth.isNull(),1).otherwise(covid_pos_person.year_of_birth))
     #df = df.withColumn("new_month_of_birth", F.when(df.month_of_birth.isNull(),1).otherwise(df.month_of_birth))
     #df = df.withColumn("new_day_of_birth", F.when(df.day_of_birth.isNull(),1).otherwise(df.day_of_birth))   
 
