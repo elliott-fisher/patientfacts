@@ -60,15 +60,12 @@ def covid_pos_sample(ALL_COVID_POS_PERSONS):
 )
 def trans_covid_pos_person(covid_pos_person):
 
-"""
-Calculate Age at date of Covid
-"""
-    #calculate date of birth for all confirmed covid patients
+    #calculate date of birth
     df = covid_pos_person.withColumn("new_year_of_birth", F.when(df.year_of_birth.isNull(),1).otherwise(df.year_of_birth))
     df = df.withColumn("new_month_of_birth", F.when(df.month_of_birth.isNull(),1).otherwise(df.month_of_birth))
     df = df.withColumn("new_day_of_birth", F.when(df.day_of_birth.isNull(),1).otherwise(df.day_of_birth))   
 
     
      
-    return 
+    return df
 
