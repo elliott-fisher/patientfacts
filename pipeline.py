@@ -82,5 +82,5 @@ def trans_covid_pos_person(covid_pos_person):
     )
     
      
-    return df
+    return cpp_date_columns_df
 
