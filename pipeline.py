@@ -9,7 +9,7 @@
 )
 def covid_pos_person(covid_pos_sample, location, manifest, person_lds):
 
-    person_df = (
+    df = (
         covid_pos_sample.join(
             person_lds.select(  'person_id','year_of_birth','month_of_birth','day_of_birth',
                                 'ethnicity_concept_name','race_concept_name','gender_concept_name',
@@ -20,10 +20,10 @@ def covid_pos_person(covid_pos_sample, location, manifest, person_lds):
     )
     
 
-    location_df = (
-        person_df.join(
+    df = (
+        df.join(
             location.select('p_location_id','city','state','zip','county'),
-            person_df.p_location_id == location.location_id,
+            df.p_location_id == location.location_id,
             how = "left"    
         )
     )
