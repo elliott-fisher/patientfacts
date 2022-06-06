@@ -55,9 +55,20 @@ def covid_pos_sample(ALL_COVID_POS_PERSONS):
     
 
 @transform_pandas(
-    Output(rid="ri.vector.main.execute.0a8a8210-b550-4a96-8523-e57b91cfe292"),
+    Output(rid="ri.foundry.main.dataset.03e93e26-aa21-4f5d-b382-daaeea2a685e"),
     covid_pos_person=Input(rid="ri.foundry.main.dataset.628bfd8f-3d3c-4afb-b840-0daf4c07ac55")
 )
-def unnamed(covid_pos_person):
+def trans_covid_pos_person(covid_pos_person):
+
+"""
+Calculate Age at date of Covid
+"""
+    #calculate date of birth for all confirmed covid patients
+    df = covid_pos_person.withColumn("new_year_of_birth", F.when(df.year_of_birth.isNull(),1).otherwise(df.year_of_birth))
+    df = df.withColumn("new_month_of_birth", F.when(df.month_of_birth.isNull(),1).otherwise(df.month_of_birth))
+    df = df.withColumn("new_day_of_birth", F.when(df.day_of_birth.isNull(),1).otherwise(df.day_of_birth))   
+
     
+     
+    return 
 
