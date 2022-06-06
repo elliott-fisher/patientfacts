@@ -19,16 +19,26 @@ def covid_pos_person(covid_pos_sample, location, manifest, person_lds):
             how = "left"
         ).drop(person_lds.person_id) 
     )
-
+"""
     df = (
         df.join(
             location.select('location_id','city','state','zip','county'),
             df.location_id == location.location_id,
             how = "left"    
         ).drop(df.location_id)
+    )
+
+    df = (
+        df.join(
+            manifest.select('data_partner_id','run_date','cdm_name','cdm_version','shift_date_yn','max_num_shift_days'),
+            df.
+        )
+
+    )
+"""
 # location: 'location_id','city','state','zip','county'
 # manaifest data_partner_id','run_date','cdm_name','cdm_version','shift_date_yn','max_num_shift_days
-    )
+
     return df            
 
 @transform_pandas(
