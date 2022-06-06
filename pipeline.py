@@ -23,7 +23,7 @@ def covid_pos_person(covid_pos_sample, location, manifest, person_lds):
 
     df2 = (
         df.join(
-            location.select('p_location_id','city','state','zip','county'),
+            location.select('location_id','city','state','zip','county'),
             df.p_location_id == location.location_id,
             how = "left"    
         )
