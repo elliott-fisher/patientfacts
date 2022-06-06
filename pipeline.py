@@ -19,7 +19,6 @@ def covid_pos_person(covid_pos_sample, location, manifest, person_lds):
         ).drop(person_lds.person_id) #.withColumnRenamed("location_id","p_location_id") 
     )
     
-    df.printSchema()
 
     location_df = (
         person_df.join(
