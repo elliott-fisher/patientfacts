@@ -16,7 +16,7 @@ def covid_pos_person(covid_pos_sample, location, manifest, person_lds):
                                 'location_id','data_partner_id'),
             covid_pos_sample.person_id == person_lds.person_id,
             how = "left"
-        ).drop(person_lds.person_id).withColumnRenamed("location_id","p_location_id") 
+        ).drop(person_lds.person_id) #.withColumnRenamed("location_id","p_location_id") 
     )
     
     df.printSchema()
@@ -24,9 +24,9 @@ def covid_pos_person(covid_pos_sample, location, manifest, person_lds):
     df2 = (
         df.join(
             location.select('location_id','city','state','zip','county'),
-            df.p_location_id == location.location_id,
+            df.location_id == location.location_id,
             how = "left"    
-        )
+        ).drop(location.location_id)
     )
 
     return df2
