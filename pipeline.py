@@ -25,7 +25,6 @@ def covid_pos_person(covid_pos_sample, location, manifest, person_lds):
         person_df.alias("a").join(
             location.alias("b").select('location_id','city','state','zip','county'),
             person_df.location_id == location.location_id,
-            "location_id",
             "left"    
         ).select("a.*")
     )
