@@ -20,16 +20,16 @@ def covid_pos_person(covid_pos_sample, location, manifest, person_lds):
                                 'location_id','data_partner_id'),
             covid_pos_sample.person_id == person_lds.person_id,
             how = "left"
-        ).drop(person_lds.person_id).show(n=20) 
+        ).drop(person_lds.person_id).withColumnRenamed("location_id","p_location_id").show(n=20) 
     )
     
 
     location_df2 = (
-        person_df.F.alias("a").join(
-            location_df.F.alias("b").select('location_id','city','state','zip','county'),
-            person_df.location_id == location_df.location_id,
+        person_df.join(
+            location_df.select('p_location_id','city','state','zip','county'),
+            person_df.p_location_id == location_df.location_id,
             "left"    
-        ).select("a.*")
+        )
     )
 
     return location_df2
