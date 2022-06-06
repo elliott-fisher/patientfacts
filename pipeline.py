@@ -78,7 +78,8 @@ def trans_covid_pos_person(covid_pos_person):
                         .otherwise(covid_pos_person.month_of_birth))
             .withColumn("new_day_of_birth", 
                         F.when(covid_pos_person.day_of_birth.isNull(),1)
-                        .otherwise(covid_pos_person.day_of_birth))   
+                        .otherwise(covid_pos_person.day_of_birth))
+            .withColumn("date_of_birth", F.concat_ws("-", F.col("new_year_of_birth"), F.col("new_month_of_birth"), F.col("new_day_of_birth")))
     )
     
      
