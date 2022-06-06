@@ -19,6 +19,9 @@ def covid_pos_person(covid_pos_sample, location, manifest, person_lds):
             how = "left"
         ).drop(person_lds.person_id) 
     )
+    
+    return df
+
 """
     df = (
         df.join(
@@ -39,7 +42,7 @@ def covid_pos_person(covid_pos_sample, location, manifest, person_lds):
 # location: 'location_id','city','state','zip','county'
 # manaifest data_partner_id','run_date','cdm_name','cdm_version','shift_date_yn','max_num_shift_days
 
-    return df            
+            
 
 @transform_pandas(
     Output(rid="ri.foundry.main.dataset.57d6f26d-f01a-454d-bb1c-93408d9fdd51"),
