@@ -52,6 +52,23 @@ def covid_pos_sample(ALL_COVID_POS_PATIENTS):
     
 
 @transform_pandas(
+    Output(rid="ri.foundry.main.dataset.8d296bb7-d13c-45c0-b98f-634d97ca13a7"),
+    trans_covid_pos_person=Input(rid="ri.foundry.main.dataset.03e93e26-aa21-4f5d-b382-daaeea2a685e")
+)
+def test_zip_logic(trans_covid_pos_person):
+
+    cpp_zip_df = ( 
+        trans_covid_pos_person
+            .withColumn("zip_code",
+                F.when(F.length(F.col("zip")) >  5, F.col('zip').substr(1,5))
+               # .when( F.length(F.col("zip")) <  5, "UNKNOWN")
+               # .otherwise("UNKNOWN") 
+            )
+    ).select('zip','zip_code')
+    return cpp_zip_df
+    
+
+@transform_pandas(
     Output(rid="ri.foundry.main.dataset.03e93e26-aa21-4f5d-b382-daaeea2a685e"),
     covid_pos_person=Input(rid="ri.foundry.main.dataset.628bfd8f-3d3c-4afb-b840-0daf4c07ac55")
 )
@@ -179,21 +196,4 @@ def trans_covid_pos_person(covid_pos_person):
     # .drop('year_of_birth','month_of_birth','day_of_birth','new_year_of_birth','new_month_of_birth','new_day_of_birth')
 
     return cpp_race_df
-
-@transform_pandas(
-    Output(rid="ri.foundry.main.dataset.8d296bb7-d13c-45c0-b98f-634d97ca13a7"),
-    trans_covid_pos_person=Input(rid="ri.foundry.main.dataset.03e93e26-aa21-4f5d-b382-daaeea2a685e")
-)
-def unnamed(trans_covid_pos_person):
-
-    cpp_zip_df = ( 
-        trans_covid_pos_person
-            .withColumn("zip_code",
-                F.when(F.length(F.col("zip")) >  5, F.col('zip').substr(1,5))
-               # .when( F.length(F.col("zip")) <  5, "UNKNOWN")
-               # .otherwise("UNKNOWN") 
-            )
-    )
-    return cpp_zip_df
-    
 
