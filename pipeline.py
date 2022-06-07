@@ -159,8 +159,8 @@ def trans_covid_pos_person(covid_pos_person):
     cpp_zip_df = ( 
         cpp_race_df
             .withColumn("zip_code",
-                F.when(F.length(F.col("zip")) >  5, F.substring('ZCTA', 1,5))
-                .when( F.length(F.col("zip")) <  5, null)
+                F.when(F.length(F.col("zip")) >  5, F.substring(F.col("zip"), 1,5))
+                .when( F.length(F.col("zip")) <  5, "UNKNOWN")
                 .otherwise(null) 
             )
     )
