@@ -42,13 +42,13 @@ def covid_pos_person(covid_pos_sample, location, manifest, person_lds):
 
 @transform_pandas(
     Output(rid="ri.foundry.main.dataset.57d6f26d-f01a-454d-bb1c-93408d9fdd51"),
-    ALL_COVID_POS_PERSONS=Input(rid="ri.foundry.main.dataset.d0f01e74-1ebb-46a5-b077-11864f9dd903")
+    ALL_COVID_POS_PATIENTS=Input(rid="ri.foundry.main.dataset.d0f01e74-1ebb-46a5-b077-11864f9dd903")
 )
-def covid_pos_sample(ALL_COVID_POS_PERSONS):
+def covid_pos_sample(ALL_COVID_POS_PATIENTS):
 
     proportion_of_patients_to_use = .001
 
-    return ALL_COVID_POS_PERSONS.sample(False, proportion_of_patients_to_use, 111)
+    return ALL_COVID_POS_PATIENTS.sample(False, proportion_of_patients_to_use, 111)
     
 
 @transform_pandas(
@@ -100,6 +100,28 @@ def trans_covid_pos_person(covid_pos_person):
     )
 
     # Ethncity
+    cpp_race_df = ( 
+        cpp_gender_df
+            .withColumn("race_ethnicity", 
+                F.when(F.col("ethnicity_concept_name") == 'Hispanic or Latino', "Hispanic or Latino Any Race")
+                .when(F.col("race_concept_name").contains('Hispanic'), "Hispanic or Latino Any Race")
+                .when(F.col("race_concept_name").contains('Black'), "Black or African American Non-Hispanic")
+                .when(F.col("race_concept_name").contains('White'), "White Non-Hispanic")
+                .when(F.col("race_concept_name") == "Asian or Pacific Islander", "Unknown")
+                .when(F.col("race_concept_name").contains('Asian'), "Asian Non-Hispanic")                       
+                .when(F.col("race_concept_name").contains('Filipino'), "Asian Non-Hispanic")
+                .when(F.col("race_concept_name").contains('Chinese'), "Asian Non-Hispanic")
+                .when(F.col("race_concept_name").contains('Korean'), "Asian Non-Hispanic")
+                .when(F.col("race_concept_name").contains('Vietnamese'), "Asian Non-Hispanic")
+                .when(F.col("race_concept_name").contains('Japanese'), "Asian Non-Hispanic")
+                .when(F.col("race_concept_name").contains('Pacific'), "Native Hawaiian or Other Pacific Islander Non-Hispanic")
+                .when(F.col("race_concept_name").contains('Polynesian'), "Native Hawaiian or Other Pacific Islander Non-Hispanic") 
+                .when(F.col("race_concept_name").contains('Other'), "Other Non-Hispanic")
+                .when(F.col("race_concept_name").contains('Multiple'), "Other Non-Hispanic") 
+                .when(F.col("race_concept_name").contains('More'), "Other Non-Hispanic")                         
+                .otherwise("Unknown")
+            )
+    )
 
-    return cpp_gender_df
+    return cpp_race_df
 
