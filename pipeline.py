@@ -137,7 +137,7 @@ def trans_covid_pos_person(covid_pos_person):
                 .when(F.col("race_concept_name").contains('Thai'), "Asian Non-Hispanic")        #
                 .when(F.col("race_concept_name").contains('Sri Lankan'), "Asian Non-Hispanic")  #    
                 .when(F.col("race_concept_name").contains('Burmese'), "Asian Non-Hispanic")     # 
-                .when(F.col("race_concept_name").contains('Okinawan'), "Asian Non-Hispanic")    #                                                              
+                .when(F.col("race_concept_name").contains('Okinawan'), "Asian Non-Hispanic")    #                                                           
                 .when(F.col("race_concept_name").contains('Cambodian'), "Asian Non-Hispanic")   #
                 .when(F.col("race_concept_name").contains('Bhutanese'), "Asian Non-Hispanic")   #
                 .when(F.col("race_concept_name").contains('Singaporean'), "Asian Non-Hispanic") #
@@ -178,12 +178,22 @@ def trans_covid_pos_person(covid_pos_person):
 
     # .drop('year_of_birth','month_of_birth','day_of_birth','new_year_of_birth','new_month_of_birth','new_day_of_birth')
 
-    return cpp_zip_df
+    return cpp_race_df
 
 @transform_pandas(
-    Output(rid="ri.vector.main.execute.70af185c-1ce4-492f-abe7-92118d7aa9af"),
+    Output(rid="ri.foundry.main.dataset.8d296bb7-d13c-45c0-b98f-634d97ca13a7"),
     trans_covid_pos_person=Input(rid="ri.foundry.main.dataset.03e93e26-aa21-4f5d-b382-daaeea2a685e")
 )
 def unnamed(trans_covid_pos_person):
+
+    cpp_zip_df = ( 
+        trans_covid_pos_person
+            .withColumn("zip_code",
+                F.when(F.length(F.col("zip")) >  5, F.col('zip').substr(1,5))
+               # .when( F.length(F.col("zip")) <  5, "UNKNOWN")
+               # .otherwise("UNKNOWN") 
+            )
+    )
+    return cpp_zip_df
     
 
