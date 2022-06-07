@@ -52,20 +52,6 @@ def covid_pos_sample(ALL_COVID_POS_PATIENTS):
     
 
 @transform_pandas(
-    Output(rid="ri.foundry.main.dataset.8d296bb7-d13c-45c0-b98f-634d97ca13a7"),
-    trans_covid_pos_person=Input(rid="ri.foundry.main.dataset.03e93e26-aa21-4f5d-b382-daaeea2a685e")
-)
-def test_zip_logic(trans_covid_pos_person):
-
-    cpp_zip_df = ( 
-        trans_covid_pos_person
-            .withColumn("zip_code", F.trim(trans_covid_pos_person.zip))
-            .withColumn("zip_code", F.when(F.length(F.col('zip_code')) >=  5, F.col('zip_code').substr(1,5)))
-            .withColumn("zip_code", F.when(F.col('zip_code').rlike("[0-9]{5}"), F.col('zip_code')))
-    )
-    return cpp_zip_df
-
-@transform_pandas(
     Output(rid="ri.foundry.main.dataset.03e93e26-aa21-4f5d-b382-daaeea2a685e"),
     covid_pos_person=Input(rid="ri.foundry.main.dataset.628bfd8f-3d3c-4afb-b840-0daf4c07ac55")
 )
