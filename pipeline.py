@@ -64,7 +64,8 @@ def trans_covid_pos_person(covid_pos_person):
         - month_of_birth
         - day_of_birth
     """
-    cpp_date_columns_df = (
+
+    with_dob_age_df = (
         covid_pos_person
             .withColumn("new_year_of_birth",  
                         F.when(covid_pos_person.year_of_birth.isNull(),1)
@@ -78,8 +79,19 @@ def trans_covid_pos_person(covid_pos_person):
             .withColumn("date_of_birth", F.concat_ws("-", F.col("new_year_of_birth"), F.col("new_month_of_birth"), F.col("new_day_of_birth")))
             .withColumn("date_of_birth", F.to_date("date_of_birth", format=None))
             .withColumn("age_at_covid", F.floor(F.months_between("first_diagnosis_date", "date_of_birth", roundOff=False)/12))
-    ).drop('month_of_birth','day_of_birth','new_year_of_birth','new_month_of_birth','new_day_of_birth')
+    ).drop('year_of_birth','month_of_birth','day_of_birth','new_year_of_birth','new_month_of_birth','new_day_of_birth')
     
-     
-    return cpp_date_columns_df
+
+    # Gender
+    cpp_gender_df = (
+        with_dob_age_df
+            .withColumn("gender_concept_name",   F.when(F.upper(with_dob_age_df.gender_concept_name) == "MALE", "MALE")
+                                                .F.when(F.upper(with_dob_age_df.gender_concept_name) == "FEMALE", "FEMALE")
+                                                .otherwise("UNKNOWN")
+            )
+    )
+
+    # Ethncity
+
+    return cpp_gender_df
 
