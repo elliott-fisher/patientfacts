@@ -59,7 +59,7 @@ def test_zip_logic(trans_covid_pos_person):
 
     cpp_zip_df = ( 
         trans_covid_pos_person
-            .withColumn("zip_code", F.trim(trans_covid_pos_person.zip)).select('zip','zip_code')
+            .withColumn("zip_code", F.trim(trans_covid_pos_person.zip))
             .withColumn("zip_code", F.when(F.length(F.col('zip_code')) >=  5, F.col('zip_code').substr(1,5)))
             .withColumn("zip_code", F.when(F.col('zip_code').rlike("[0-9]{5}"), F.col('zip_code')))
     )
