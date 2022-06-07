@@ -156,15 +156,6 @@ def trans_covid_pos_person(covid_pos_person):
             )
     )
 
-    cpp_zip_df = ( 
-        cpp_race_df
-            .withColumn("zip_code",
-                F.when(F.length(F.col("zip")) >  5, F.col('zip').substr(1,5))
-               # .when( F.length(F.col("zip")) <  5, "UNKNOWN")
-               # .otherwise("UNKNOWN") 
-            )
-    )
-
     """
     monitor_df = (
         Air_quality_monitor_data_for_N3C_upload
@@ -188,4 +179,11 @@ def trans_covid_pos_person(covid_pos_person):
     # .drop('year_of_birth','month_of_birth','day_of_birth','new_year_of_birth','new_month_of_birth','new_day_of_birth')
 
     return cpp_zip_df
+
+@transform_pandas(
+    Output(rid="ri.vector.main.execute.70af185c-1ce4-492f-abe7-92118d7aa9af"),
+    trans_covid_pos_person=Input(rid="ri.foundry.main.dataset.03e93e26-aa21-4f5d-b382-daaeea2a685e")
+)
+def unnamed(trans_covid_pos_person):
+    
 
