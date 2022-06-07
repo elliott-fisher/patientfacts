@@ -61,12 +61,12 @@ def test_zip_logic(trans_covid_pos_person):
         trans_covid_pos_person
             .withColumn("zip_code", F.trim(trans_covid_pos_person.zip))
             .withColumn("zip_code",
-                F.when(F.length(F.col('zip')) >=  5, F.col('zip').substr(1,5))
-                .when(F.length(F.col('zip')) <  5, trans_covid_pos_person.zip)
+                F.when(F.length(F.col('zip_code')) >=  5, F.col('zip_code').substr(1,5))
+                #.when(F.col("zcta").rlike('[0-9]{5}')
+                .when(F.length(F.col('zip_code')) <  5, trans_covid_pos_person.zip_code)
             ).select('zip','zip_code')
     )
     return cpp_zip_df
-    
 
 @transform_pandas(
     Output(rid="ri.foundry.main.dataset.03e93e26-aa21-4f5d-b382-daaeea2a685e"),
