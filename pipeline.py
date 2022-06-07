@@ -104,7 +104,7 @@ def trans_covid_pos_person(covid_pos_person):
     Creates the new column: race_ethnicity
     Contains standardized values from ethnicity_concept_name and race_concept_name
 
-    In data, but not currentally set to UNKNOWN
+    In data, but currentally set to UNKNOWN
     Barbadian
     Dominica Islander
     Trinidadian
@@ -156,7 +156,36 @@ def trans_covid_pos_person(covid_pos_person):
             )
     )
 
+    cpp_zip_df = ( 
+        cpp_race_df
+            .withColumn("zip_code",
+                F.when(F.length(F.col("zip")) >  5, F.substring('ZCTA', 1,5))
+                .when( F.length(F.col("zip")) <  5, null)
+                .otherwise(null) 
+            )
+    )
+
+    """
+    monitor_df = (
+        Air_quality_monitor_data_for_N3C_upload
+            .select('aqs_site_id', Air_quality_monitor_data_for_N3C_upload.zcta.cast("string").alias("zcta"), 'Longitude', 'Latitude')
+            .withColumn("zcta", F.when(F.length(F.col("zcta")) >  5, F.substring('zcta', 1,5)).otherwise(F.col("zcta")))
+            .filter(F.col("zcta").isNotNull())
+            .filter(F.col("zcta").rlike('[0-9]{5}'))
+            .distinct()
+    ) 
+    print('monitor_df row count', monitor_df.count(), sep=': ')
+    
+    zip_to_zcta_df = (
+        ZIP_to_ZCTA_Crosswalk_2021
+            .withColumn("ZCTA", F.when(F.length(F.col("ZCTA")) >  5, F.substring('ZCTA', 1,5)).otherwise(F.col("ZCTA")))
+            .withColumn("ZIP_CODE", F.when(F.length(F.col("ZIP_CODE")) >  5, F.substring('ZIP_CODE', 1,5)).otherwise(F.col("ZIP_CODE")))
+            .withColumn("ZIP_CODE", F.when(F.length(F.col("ZIP_CODE")) <  5, F.lpad('ZIP_CODE', 5, '0')).otherwise(F.col("ZIP_CODE")))
+            .withColumn("zcta_matches_zip", F.when(F.col("ZIP_CODE") == F.col("ZCTA"), F.lit('1') ).otherwise(F.lit('0')))
+
+    """
+
     # .drop('year_of_birth','month_of_birth','day_of_birth','new_year_of_birth','new_month_of_birth','new_day_of_birth')
 
-    return cpp_race_df
+    return cpp_zip_df
 
