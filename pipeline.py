@@ -85,9 +85,10 @@ def trans_covid_pos_person(covid_pos_person):
     # Gender
     cpp_gender_df = (
         with_dob_age_df
-            .withColumn("gender_concept_name",   F.when(F.upper(with_dob_age_df.gender_concept_name) == "MALE", "MALE")
-                                                 .when(F.upper(with_dob_age_df.gender_concept_name) == "FEMALE", "FEMALE")
-                                                .otherwise("UNKNOWN")
+            .withColumn("gender_concept_name",  
+                F.when(F.upper(with_dob_age_df.gender_concept_name) == "MALE", "MALE")
+                .when(F.upper(with_dob_age_df.gender_concept_name) == "FEMALE", "FEMALE")
+                .otherwise("UNKNOWN")
             )
     )
 
