@@ -62,7 +62,7 @@ def test_zip_logic(trans_covid_pos_person):
             .withColumn("zip_code", F.trim(trans_covid_pos_person.zip))
             .withColumn("zip_code",
                 F.when(F.length(F.col('zip_code')) >=  5, F.col('zip_code').substr(1,5))
-                .when(F.col('zip_code').rlike("\d{5}"), F.col('zip_code'))
+                .when(F.col('zip_code').rlike("^\d{5}"), F.col('zip_code'))
                 .otherwise(None)
             ).select('zip','zip_code')
     )
