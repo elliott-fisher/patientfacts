@@ -103,6 +103,16 @@ def trans_covid_pos_person(covid_pos_person):
     """
     Creates the new column: race_ethnicity
     Contains standardized values from ethnicity_concept_name and race_concept_name
+
+    In data, but not currentally set to UNKNOWN
+    Barbadian
+    Dominica Islander
+    Trinidadian
+    West Indian
+    Jamaican
+    African
+    Madagascar
+    Maldivian
     """
     cpp_race_df = ( 
         cpp_gender_df
@@ -110,19 +120,38 @@ def trans_covid_pos_person(covid_pos_person):
                 F.when(F.col("ethnicity_concept_name") == 'Hispanic or Latino', "Hispanic or Latino Any Race")
                 .when(F.col("race_concept_name").contains('Hispanic'), "Hispanic or Latino Any Race")
                 .when(F.col("race_concept_name").contains('Black'), "Black or African American Non-Hispanic")
+                .when(F.col("race_concept_name") == ('African American'), "Black or African American Non-Hispanic")                
                 .when(F.col("race_concept_name").contains('White'), "White Non-Hispanic")
-                .when(F.col("race_concept_name") == "Asian or Pacific Islander", "Unknown")
-                .when(F.col("race_concept_name").contains('Asian'), "Asian Non-Hispanic")                       
+                .when(F.col("race_concept_name") == "Asian or Pacific Islander", "Unknown") # why is this unknown?
+                .when(F.col("race_concept_name").contains('Asian'), "Asian Non-Hispanic")
                 .when(F.col("race_concept_name").contains('Filipino'), "Asian Non-Hispanic")
                 .when(F.col("race_concept_name").contains('Chinese'), "Asian Non-Hispanic")
                 .when(F.col("race_concept_name").contains('Korean'), "Asian Non-Hispanic")
                 .when(F.col("race_concept_name").contains('Vietnamese'), "Asian Non-Hispanic")
-                .when(F.col("race_concept_name").contains('Japanese'), "Asian Non-Hispanic")
+                .when(F.col("race_concept_name").contains('Japanese'), "Asian Non-Hispanic")                  
+                .when(F.col("race_concept_name").contains('Bangladeshi'), "Asian Non-Hispanic") #
+                .when(F.col("race_concept_name").contains('Pakistani'), "Asian Non-Hispanic")   #
+                .when(F.col("race_concept_name").contains('Nepalese'), "Asian Non-Hispanic")    #
+                .when(F.col("race_concept_name").contains('Laotian'), "Asian Non-Hispanic")     #
+                .when(F.col("race_concept_name").contains('Taiwanese'), "Asian Non-Hispanic")   #                                     
+                .when(F.col("race_concept_name").contains('Thai'), "Asian Non-Hispanic")        #
+                .when(F.col("race_concept_name").contains('Sri Lankan'), "Asian Non-Hispanic")  #    
+                .when(F.col("race_concept_name").contains('Burmese'), "Asian Non-Hispanic")     # 
+                .when(F.col("race_concept_name").contains('Okinawan'), "Asian Non-Hispanic")    #                                                              
+                .when(F.col("race_concept_name").contains('Cambodian'), "Asian Non-Hispanic")   #
+                .when(F.col("race_concept_name").contains('Bhutanese'), "Asian Non-Hispanic")   #
+                .when(F.col("race_concept_name").contains('Singaporean'), "Asian Non-Hispanic") #
+                .when(F.col("race_concept_name").contains('Hmong'), "Asian Non-Hispanic")       #
+                .when(F.col("race_concept_name").contains('Malaysian'), "Asian Non-Hispanic")   # 
+                .when(F.col("race_concept_name").contains('Indonesian'), "Asian Non-Hispanic")  #               
                 .when(F.col("race_concept_name").contains('Pacific'), "Native Hawaiian or Other Pacific Islander Non-Hispanic")
-                .when(F.col("race_concept_name").contains('Polynesian'), "Native Hawaiian or Other Pacific Islander Non-Hispanic") 
-                .when(F.col("race_concept_name").contains('Other'), "Other Non-Hispanic")
-                .when(F.col("race_concept_name").contains('Multiple'), "Other Non-Hispanic") 
-                .when(F.col("race_concept_name").contains('More'), "Other Non-Hispanic")                         
+                .when(F.col("race_concept_name").contains('Polynesian'), "Native Hawaiian or Other Pacific Islander Non-Hispanic")                      
+                .when(F.col("race_concept_name").contains('Native Hawaiian'), "Native Hawaiian or Other Pacific Islander Non-Hispanic") #                 
+                .when(F.col("race_concept_name").contains('Micronesian'), "Native Hawaiian or Other Pacific Islander Non-Hispanic")     #
+                .when(F.col("race_concept_name").contains('Melanesian'), "Native Hawaiian or Other Pacific Islander Non-Hispanic")      # 
+                .when(F.col("race_concept_name").contains('Other'), "Other Non-Hispanic")    #??
+                .when(F.col("race_concept_name").contains('Multiple'), "Other Non-Hispanic") #?? 
+                .when(F.col("race_concept_name").contains('More'), "Other Non-Hispanic")     #??  
                 .otherwise("UNKNOWN")
             )
     )
