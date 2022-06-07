@@ -60,7 +60,7 @@ def test_zip_logic(trans_covid_pos_person):
     cpp_zip_df = ( 
         trans_covid_pos_person
             .withColumn("zip_code", F.trim(trans_covid_pos_person.zip))
-            .withColumn("zip_code", F.when(F.length(F.col('zip_code')) >=  5, F.col('zip_code').substr(1,5)))
+            #.withColumn("zip_code", F.when(F.length(F.col('zip_code')) >=  5, F.col('zip_code').substr(1,5)))
             .withColumn("zip_code", F.when(F.col('zip_code').rlike("[0-9]{5}"), F.col('zip_code')))
     )
     return cpp_zip_df
@@ -72,7 +72,7 @@ def test_zip_logic(trans_covid_pos_person):
 def trans_covid_pos_person(covid_pos_person):
 
     """
-    Creates new columns: date_of_birth, age_at_covid  
+    Creates columns: date_of_birth, age_at_covid  
     Note: Sets null values of the following to 1:
         - year_of_birth
         - month_of_birth
@@ -100,7 +100,7 @@ def trans_covid_pos_person(covid_pos_person):
     
 
     """
-    Creates the new column: gender
+    Creates column: gender
     Contains standardized values from gender_concept_name so that:
     - Uppercase all versions of "male" and "female" strings
     - Replace non-MALE and FEMALE values with UNKNOWN 
@@ -115,7 +115,7 @@ def trans_covid_pos_person(covid_pos_person):
     )
 
     """
-    Creates the new column: race_ethnicity
+    Creates column: race_ethnicity
     Contains standardized values from ethnicity_concept_name and race_concept_name
 
     In data, but currentally set to UNKNOWN
@@ -171,24 +171,18 @@ def trans_covid_pos_person(covid_pos_person):
     )
 
     """
-    monitor_df = (
-        Air_quality_monitor_data_for_N3C_upload
-            .select('aqs_site_id', Air_quality_monitor_data_for_N3C_upload.zcta.cast("string").alias("zcta"), 'Longitude', 'Latitude')
-            .withColumn("zcta", F.when(F.length(F.col("zcta")) >  5, F.substring('zcta', 1,5)).otherwise(F.col("zcta")))
-            .filter(F.col("zcta").isNotNull())
-            .filter(F.col("zcta").rlike('[0-9]{5}'))
-            .distinct()
-    ) 
-    print('monitor_df row count', monitor_df.count(), sep=': ')
-    
-    zip_to_zcta_df = (
-        ZIP_to_ZCTA_Crosswalk_2021
-            .withColumn("ZCTA", F.when(F.length(F.col("ZCTA")) >  5, F.substring('ZCTA', 1,5)).otherwise(F.col("ZCTA")))
-            .withColumn("ZIP_CODE", F.when(F.length(F.col("ZIP_CODE")) >  5, F.substring('ZIP_CODE', 1,5)).otherwise(F.col("ZIP_CODE")))
-            .withColumn("ZIP_CODE", F.when(F.length(F.col("ZIP_CODE")) <  5, F.lpad('ZIP_CODE', 5, '0')).otherwise(F.col("ZIP_CODE")))
-            .withColumn("zcta_matches_zip", F.when(F.col("ZIP_CODE") == F.col("ZCTA"), F.lit('1') ).otherwise(F.lit('0')))
-
+    Creates column: zip_code
+    Standardizes the values in zip:
+    1. removes leading and training blanks
+    2. truncates to first five characters
+    3. only keeps values with 5 digit characters 
     """
+    cpp_zip_df = ( 
+        cpp_race_df
+            .withColumn("zip_code", F.trim(cpp_race_df.zip))
+            .withColumn("zip_code", F.when(F.length(F.col('zip_code')) >=  5, F.col('zip_code').substr(1,5)))
+            .withColumn("zip_code", F.when(F.col('zip_code').rlike("[0-9]{5}"), F.col('zip_code')))
+    )
 
     # .drop('year_of_birth','month_of_birth','day_of_birth','new_year_of_birth','new_month_of_birth','new_day_of_birth')
 
