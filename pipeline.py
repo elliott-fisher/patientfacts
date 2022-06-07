@@ -60,7 +60,7 @@ def test_zip_logic(trans_covid_pos_person):
     cpp_zip_df = ( 
         trans_covid_pos_person
             .withColumn("zip_code",
-                F.when(F.length(F.col('zip')) >=  5, "XXXXX")#F.col('zip').substr(1,5)"")
+                F.when(F.length(F.trim(F.col('zip')) >=  5, F.col(F.trim('zip')).substr(1,5))
                # .when( F.length(F.col("zip")) <  5, "UNKNOWN")
                # .otherwise("UNKNOWN") 
             ).select('zip','zip_code')
