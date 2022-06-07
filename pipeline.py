@@ -64,7 +64,6 @@ def trans_covid_pos_person(covid_pos_person):
         - month_of_birth
         - day_of_birth
     """
-
     with_dob_age_df = (
         covid_pos_person
             .withColumn("new_year_of_birth",  
@@ -76,13 +75,21 @@ def trans_covid_pos_person(covid_pos_person):
             .withColumn("new_day_of_birth", 
                         F.when(covid_pos_person.day_of_birth.isNull(),1)
                         .otherwise(covid_pos_person.day_of_birth))
-            .withColumn("date_of_birth", F.concat_ws("-", F.col("new_year_of_birth"), F.col("new_month_of_birth"), F.col("new_day_of_birth")))
-            .withColumn("date_of_birth", F.to_date("date_of_birth", format=None))
-            .withColumn("age_at_covid", F.floor(F.months_between("first_diagnosis_date", "date_of_birth", roundOff=False)/12))
+            .withColumn("date_of_birth", 
+                        F.concat_ws("-", F.col("new_year_of_birth"), F.col("new_month_of_birth"), F.col("new_day_of_birth")))
+            .withColumn("date_of_birth", 
+                        F.to_date("date_of_birth", format=None))
+            .withColumn("age_at_covid", 
+                        F.floor(F.months_between("first_diagnosis_date", "date_of_birth", roundOff=False)/12))
+                        
     ).drop('year_of_birth','month_of_birth','day_of_birth','new_year_of_birth','new_month_of_birth','new_day_of_birth')
     
 
-    # Gender
+    """
+    Standardize gender_concept_name so that:
+    - Uppercase all versions of "male" and "female" strings
+    - Replace non-MALE and FEMALE values with UNKNOWN 
+    """
     cpp_gender_df = (
         with_dob_age_df
             .withColumn("gender_concept_name",  
