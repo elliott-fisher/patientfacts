@@ -58,7 +58,7 @@ def covid_pos_sample(ALL_COVID_POS_PATIENTS):
 def trans_covid_pos_person(covid_pos_person):
 
     """
-    Calculates date of birth and age at Covid+
+    Creates new columns: date_of_birth, age_at_covid  
     Note: Sets null values of the following to 1:
         - year_of_birth
         - month_of_birth
@@ -82,24 +82,28 @@ def trans_covid_pos_person(covid_pos_person):
             .withColumn("age_at_covid", 
                         F.floor(F.months_between("first_diagnosis_date", "date_of_birth", roundOff=False)/12))
                         
-    ).drop('year_of_birth','month_of_birth','day_of_birth','new_year_of_birth','new_month_of_birth','new_day_of_birth')
+    ).drop('new_year_of_birth','new_month_of_birth','new_day_of_birth')
     
 
     """
-    Standardize gender_concept_name so that:
+    Creates the new column: gender
+    Contains standardized values from gender_concept_name so that:
     - Uppercase all versions of "male" and "female" strings
     - Replace non-MALE and FEMALE values with UNKNOWN 
     """
     cpp_gender_df = (
         with_dob_age_df
-            .withColumn("gender_concept_name",  
+            .withColumn("gender",  
                 F.when(F.upper(with_dob_age_df.gender_concept_name) == "MALE", "MALE")
                 .when(F.upper(with_dob_age_df.gender_concept_name) == "FEMALE", "FEMALE")
                 .otherwise("UNKNOWN")
             )
     )
 
-    # Ethncity
+    """
+    Creates the new column: race_ethnicity
+    Contains standardized values from ethnicity_concept_name and race_concept_name
+    """
     cpp_race_df = ( 
         cpp_gender_df
             .withColumn("race_ethnicity", 
@@ -119,9 +123,11 @@ def trans_covid_pos_person(covid_pos_person):
                 .when(F.col("race_concept_name").contains('Other'), "Other Non-Hispanic")
                 .when(F.col("race_concept_name").contains('Multiple'), "Other Non-Hispanic") 
                 .when(F.col("race_concept_name").contains('More'), "Other Non-Hispanic")                         
-                .otherwise("Unknown")
+                .otherwise("UNKNOWN")
             )
     )
+
+    # .drop('year_of_birth','month_of_birth','day_of_birth','new_year_of_birth','new_month_of_birth','new_day_of_birth')
 
     return cpp_race_df
 
