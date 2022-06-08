@@ -174,3 +174,10 @@ def covid_pos_sample(ALL_COVID_POS_PATIENTS):
     return ALL_COVID_POS_PATIENTS.sample(False, proportion_of_patients_to_use, 111)
     
 
+@transform_pandas(
+    Output(rid="ri.vector.main.execute.d7a3cac5-a85f-4d69-bc37-b64a7b6e02f4"),
+    covid_pos_person=Input(rid="ri.foundry.main.dataset.628bfd8f-3d3c-4afb-b840-0daf4c07ac55")
+)
+def unnamed(covid_pos_person):
+    
+
