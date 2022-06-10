@@ -253,7 +253,7 @@ def clean_covid_pos_person(covid_pos_person):
 )
 def comorbidity_by_patient(comorbidity_by_visits):
 
-    comorbidity_by_patient_df = comorbidity_by_visits.groupBy().agg(F.max('CONGESTIVE_HEART_FAILURE'))
+    comorbidity_by_patient_df = comorbidity_by_visits.groupBy('person_id').agg(F.max('CONGESTIVE_HEART_FAILURE').alias('CHF'))
 
     return comorbidity_by_patient_df
     
