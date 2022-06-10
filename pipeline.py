@@ -261,10 +261,10 @@ Description:
 This process copies the logic found in the Logic Liasion conditions_of_interest transform 
 created by Andrea Zhou.  
 """
-def comorbidities_add(clean_covid_pos_person, our_concept_sets, condition_occurrence, concept_set_members):
+def comorbidity_by_visits(clean_covid_pos_person, our_concept_sets, condition_occurrence, concept_set_members):
 
     #bring in only cohort patient ids
-    person_df = clean_covid_pos_person.select('person_id', 'first_diagnosis_date')
+    person_df = clean_covid_pos_person
     
 
     # Get comorbidity concept_set_name values from our list 
@@ -287,6 +287,8 @@ def comorbidities_add(clean_covid_pos_person, our_concept_sets, condition_occurr
     """ 
     Get all conditions for current set of Covid+ patients    
     where the condition_start_date is not null
+
+    WARNING: Filters on  ** visit_date <=  first_diagnosis_date **
     """
     person_conditions_df = (
         condition_occurrence 
