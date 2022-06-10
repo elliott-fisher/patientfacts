@@ -248,6 +248,14 @@ def clean_covid_pos_person_s1(covid_pos_person):
     return cpp_zip_df
 
 @transform_pandas(
+    Output(rid="ri.foundry.main.dataset.203392f0-b875-453c-88c5-77ca5223739e"),
+    clean_covid_pos_person_s1=Input(rid="ri.foundry.main.dataset.03e93e26-aa21-4f5d-b382-daaeea2a685e"),
+    person_lds=Input(rid="ri.foundry.main.dataset.50cae11a-4afb-457d-99d4-55b4bc2cbe66")
+)
+def comorbidities_add(clean_covid_pos_person_s1, person_lds):
+    
+
+@transform_pandas(
     Output(rid="ri.foundry.main.dataset.628bfd8f-3d3c-4afb-b840-0daf4c07ac55"),
     covid_pos_sample=Input(rid="ri.foundry.main.dataset.57d6f26d-f01a-454d-bb1c-93408d9fdd51"),
     location=Input(rid="ri.foundry.main.dataset.efac41e8-cc64-49bf-9007-d7e22a088318"),
@@ -295,12 +303,5 @@ def covid_pos_sample(ALL_COVID_POS_PATIENTS):
     proportion_of_patients_to_use = 1.
 
     return ALL_COVID_POS_PATIENTS.sample(False, proportion_of_patients_to_use, 111)
-    
-
-@transform_pandas(
-    Output(rid="ri.vector.main.execute.f28ed562-19c0-43f9-a3e3-cd6c14a3b802"),
-    clean_covid_pos_person_s1=Input(rid="ri.foundry.main.dataset.03e93e26-aa21-4f5d-b382-daaeea2a685e")
-)
-def unnamed(clean_covid_pos_person_s1):
     
 
