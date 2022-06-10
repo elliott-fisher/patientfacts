@@ -248,6 +248,17 @@ def clean_covid_pos_person(covid_pos_person):
     return cpp_zip_df
 
 @transform_pandas(
+    Output(rid="ri.foundry.main.dataset.f561b69a-b3e6-492e-a54e-88c5b4ae0b7e"),
+    comorbidity_by_visits=Input(rid="ri.foundry.main.dataset.203392f0-b875-453c-88c5-77ca5223739e")
+)
+def comorbidity_by_patient(comorbidity_by_visits):
+
+    comorbidity_by_patient_df = comorbidity_by_visits.groupBy('person_id').agg(F.max("CONGESTIVE_HEART_FAILURE"))
+
+    return comorbidity_by_patient_df
+    
+
+@transform_pandas(
     Output(rid="ri.foundry.main.dataset.203392f0-b875-453c-88c5-77ca5223739e"),
     clean_covid_pos_person=Input(rid="ri.foundry.main.dataset.03e93e26-aa21-4f5d-b382-daaeea2a685e"),
     concept_set_members=Input(rid="ri.foundry.main.dataset.e670c5ad-42ca-46a2-ae55-e917e3e161b6"),
@@ -303,6 +314,7 @@ def comorbidity_by_visits(clean_covid_pos_person, our_concept_sets, condition_oc
     # Subset person_conditions_df to records with comorbidities
     person_comorbidities_df = person_conditions_df.join(comorbidity_concept_set_members_df, 'concept_id', 'inner')
 
+    #
     person_comorbidities_df = person_comorbidities_df.groupby('person_id','visit_date').pivot('column_name').agg(F.lit(1)).na.fill(0)
 
     return person_comorbidities_df
@@ -357,12 +369,5 @@ def covid_pos_sample(ALL_COVID_POS_PATIENTS):
     proportion_of_patients_to_use = 1.
 
     return ALL_COVID_POS_PATIENTS.sample(False, proportion_of_patients_to_use, 111)
-    
-
-@transform_pandas(
-    Output(rid="ri.vector.main.execute.d158549a-2bbc-4df5-a0ac-aa47536e83fe"),
-    comorbidity_by_visits=Input(rid="ri.foundry.main.dataset.203392f0-b875-453c-88c5-77ca5223739e")
-)
-def unnamed(comorbidity_by_visits):
     
 
