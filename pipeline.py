@@ -250,9 +250,17 @@ def clean_covid_pos_person_s1(covid_pos_person):
 @transform_pandas(
     Output(rid="ri.foundry.main.dataset.203392f0-b875-453c-88c5-77ca5223739e"),
     clean_covid_pos_person_s1=Input(rid="ri.foundry.main.dataset.03e93e26-aa21-4f5d-b382-daaeea2a685e"),
+    our_concept_sets=Input(rid="ri.foundry.main.dataset.f80a92e0-cdc4-48d9-b4b7-42e60d42d9e0"),
     person_lds=Input(rid="ri.foundry.main.dataset.50cae11a-4afb-457d-99d4-55b4bc2cbe66")
 )
-def comorbidities_add(clean_covid_pos_person_s1, person_lds):
+"""
+Author: Elliott Fisher
+Date: 
+Description
+This process duplicates the logic found in the Logic Liasion conditions_of_interest transform 
+created by Andrea Zhou.  
+"""
+def comorbidities_add(clean_covid_pos_person_s1, person_lds, our_concept_sets):
     
 
 @transform_pandas(
