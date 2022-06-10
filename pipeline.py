@@ -282,7 +282,7 @@ def comorbidities_add(clean_covid_pos_person, our_concept_sets, condition_occurr
     comorbidity_concept_names_df = (
         our_concept_sets
             .filter(our_concept_sets.domain.contains('condition_occurrence'))
-            .filter(our_concept_sets.domain.contains('comorbidity'))
+            .filter(our_concept_sets.condition_type.contains('comorbidity'))
             .select('concept_set_name','indicator_prefix')
     )        
 
