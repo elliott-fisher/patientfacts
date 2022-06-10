@@ -277,6 +277,7 @@ def comorbidities_add(clean_covid_pos_person, our_concept_sets, condition_occurr
             .select('concept_set_name','indicator_prefix')
     )
 
+    # Get most recent version of comorbidity concept_id values from concept_set_members 
     comorbidity_concept_set_members_df = (
         concept_set_members
             .select('concept_id','is_most_recent_version','concept_set_name')
@@ -285,6 +286,7 @@ def comorbidities_add(clean_covid_pos_person, our_concept_sets, condition_occurr
             .select('concept_id','indicator_prefix')
     )
 
+    # Get all conditions for current set of Covid+ patients 
     person_conditions_df = (
         condition_occurrence 
             .select('person_id', 'condition_start_date', 'condition_concept_id') 
@@ -294,7 +296,10 @@ def comorbidities_add(clean_covid_pos_person, our_concept_sets, condition_occurr
             .join(person_id_df,'person_id','inner')
     )
 
-    return comorbidity_concept_set_members_df    
+    # Subset person_conditions_df to records with comorbidities
+    person_comorbidities_df = person_conditions_df.join(comorbidity_concept_set_members_df, 'concept_id', 'inner')
+
+    return comorbidity_concept_seperson_comorbidities_df
 
     
 
