@@ -314,13 +314,15 @@ def comorbidity_by_visits(clean_covid_pos_person, our_concept_sets, condition_oc
             .where(F.col('visit_date') <= F.col('first_diagnosis_date'))  # may want to revist this!!
     )
 
+# why is this giving fewer distinct person_id values than prior 
+
     # Subset person_conditions_df to records with comorbidities
-    person_comorbidities_df = person_conditions_df.join(comorbidity_concept_set_members_df, 'concept_id', 'left')
+    person_comorbidities_df = person_conditions_df.join(comorbidity_concept_set_members_df, 'concept_id', 'inner')
 
     #
     person_comorbidities_df = person_comorbidities_df.groupby('person_id','visit_date').pivot('column_name').agg(F.lit(1)).na.fill(0)
 
-    return person_comorbidities_df
+    return person_conditions_df
 
     
 
