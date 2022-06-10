@@ -264,7 +264,7 @@ created by Andrea Zhou.
 def comorbidity_by_visits(clean_covid_pos_person, our_concept_sets, condition_occurrence, concept_set_members):
 
     #bring in only cohort patient ids
-    person_df = clean_covid_pos_person
+    person_df = clean_covid_pos_person #.select('person_id', 'first_diagnosis_date')
     
 
     # Get comorbidity concept_set_name values from our list 
@@ -357,5 +357,12 @@ def covid_pos_sample(ALL_COVID_POS_PATIENTS):
     proportion_of_patients_to_use = 1.
 
     return ALL_COVID_POS_PATIENTS.sample(False, proportion_of_patients_to_use, 111)
+    
+
+@transform_pandas(
+    Output(rid="ri.vector.main.execute.d158549a-2bbc-4df5-a0ac-aa47536e83fe"),
+    comorbidity_by_visits=Input(rid="ri.foundry.main.dataset.203392f0-b875-453c-88c5-77ca5223739e")
+)
+def unnamed(comorbidity_by_visits):
     
 
