@@ -272,7 +272,7 @@ def comorbidities_add(clean_covid_pos_person, our_concept_sets, condition_occurr
         our_concept_sets
             .filter(our_concept_sets.domain.contains('condition_occurrence'))
             .filter(our_concept_sets.condition_type.contains('comorbidity'))
-            .select('concept_set_name','indicator_prefix')
+            .select('concept_set_name','column_name')
     )
 
     # Get most recent version of comorbidity concept_id values from concept_set_members 
@@ -281,7 +281,7 @@ def comorbidities_add(clean_covid_pos_person, our_concept_sets, condition_occurr
             .select('concept_id','is_most_recent_version','concept_set_name')
             .where(F.col('is_most_recent_version') == 'true')
             .join(comorbidity_concept_names_df, 'concept_set_name', 'inner')
-            .select('concept_id','indicator_prefix')
+            .select('concept_id','column_name')
     )
 
     """ 
@@ -295,13 +295,15 @@ def comorbidities_add(clean_covid_pos_person, our_concept_sets, condition_occurr
             .withColumnRenamed('condition_start_date','visit_date') # nicer name
             .withColumnRenamed('condition_concept_id','concept_id') # renamed for next join
             .join(person_df,'person_id','inner')
-            .where(F.col('visit_date') <= F.col('first_diagnosis_date'))
+            .where(F.col('visit_date') <= F.col('first_diagnosis_date'))  # may want to revist this!!
     )
 
     # Subset person_conditions_df to records with comorbidities
     person_comorbidities_df = person_conditions_df.join(comorbidity_concept_set_members_df, 'concept_id', 'inner')
 
-    return person_comorbidities_df
+    df = df.groupby('person_id','visit_date').pivot('column_name').agg(F.lit(1)).na.fill(0)
+
+    return df
 
     
 
