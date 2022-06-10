@@ -295,7 +295,7 @@ def comorbidities_add(clean_covid_pos_person, our_concept_sets, condition_occurr
             .withColumnRenamed('condition_start_date','visit_date') # nicer name
             .withColumnRenamed('condition_concept_id','concept_id') # renamed for next join
             .join(person_df,'person_id','inner')
-            .where(F.col('condition_start_date') <= F.col('first_diagnosis_date'))
+            .where(F.col('visit_date') <= F.col('first_diagnosis_date'))
     )
 
     # Subset person_conditions_df to records with comorbidities
