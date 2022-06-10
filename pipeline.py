@@ -266,10 +266,8 @@ def comorbidities_add(clean_covid_pos_person, our_concept_sets, condition_occurr
     #bring in only cohort patient ids
     person_df = clean_covid_pos_person.select('person_id', 'first_diagnosis_date')
     
-    """ 
-    Get all conditions for current set of Covid+ patients    
-    where the condition_start_date is not null
-    """
+
+    # Get comorbidity concept_set_name values from our list 
     comorbidity_concept_names_df = (
         our_concept_sets
             .filter(our_concept_sets.domain.contains('condition_occurrence'))
@@ -286,14 +284,18 @@ def comorbidities_add(clean_covid_pos_person, our_concept_sets, condition_occurr
             .select('concept_id','indicator_prefix')
     )
 
-    # Get all conditions for current set of Covid+ patients 
+    """ 
+    Get all conditions for current set of Covid+ patients    
+    where the condition_start_date is not null
+    """
     person_conditions_df = (
         condition_occurrence 
             .select('person_id', 'condition_start_date', 'condition_concept_id') 
             .where(F.col('condition_start_date').isNotNull()) 
-            .withColumnRenamed('condition_start_date','visit_date') # renamed for ???
+            .withColumnRenamed('condition_start_date','visit_date') # nicer name
             .withColumnRenamed('condition_concept_id','concept_id') # renamed for next join
             .join(person_df,'person_id','inner')
+            .where(F.col('condition_start_date') <= F.col('first_diagnosis_date'))
     )
 
     # Subset person_conditions_df to records with comorbidities
