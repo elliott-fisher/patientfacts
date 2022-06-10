@@ -128,7 +128,7 @@ def all_clean_covid_pos_person(covid_pos_person):
     Output(rid="ri.foundry.main.dataset.03e93e26-aa21-4f5d-b382-daaeea2a685e"),
     covid_pos_person=Input(rid="ri.foundry.main.dataset.628bfd8f-3d3c-4afb-b840-0daf4c07ac55")
 )
-def clean_covid_pos_person_s1(covid_pos_person):
+def clean_covid_pos_person(covid_pos_person):
 
     """
     Creates columns: date_of_birth, age_at_covid  
@@ -249,9 +249,10 @@ def clean_covid_pos_person_s1(covid_pos_person):
 
 @transform_pandas(
     Output(rid="ri.foundry.main.dataset.203392f0-b875-453c-88c5-77ca5223739e"),
-    clean_covid_pos_person_s1=Input(rid="ri.foundry.main.dataset.03e93e26-aa21-4f5d-b382-daaeea2a685e"),
-    our_concept_sets=Input(rid="ri.foundry.main.dataset.f80a92e0-cdc4-48d9-b4b7-42e60d42d9e0"),
-    person_lds=Input(rid="ri.foundry.main.dataset.50cae11a-4afb-457d-99d4-55b4bc2cbe66")
+    clean_covid_pos_person=Input(rid="ri.foundry.main.dataset.03e93e26-aa21-4f5d-b382-daaeea2a685e"),
+    concept_set_members=Input(rid="ri.foundry.main.dataset.e670c5ad-42ca-46a2-ae55-e917e3e161b6"),
+    condition_occurrence=Input(rid="ri.foundry.main.dataset.900fa2ad-87ea-4285-be30-c6b5bab60e86"),
+    our_concept_sets=Input(rid="ri.foundry.main.dataset.f80a92e0-cdc4-48d9-b4b7-42e60d42d9e0")
 )
 """
 Author: Elliott Fisher
@@ -260,7 +261,20 @@ Description
 This process duplicates the logic found in the Logic Liasion conditions_of_interest transform 
 created by Andrea Zhou.  
 """
-def comorbidities_add(clean_covid_pos_person_s1, person_lds, our_concept_sets):
+def comorbidities_add(clean_covid_pos_person, our_concept_sets, condition_occurrence, concept_set_members):
+
+    #bring in only cohort patient ids
+    person_id_df = clean_covid_pos_person.select('person_id')
+    
+    #filter observations table to only cohort patients    
+    conditions_df = condition_occurrence \
+        .select('person_id', 'condition_start_date', 'condition_concept_id') \
+        .where(F.col('condition_start_date').isNotNull()) \
+        .withColumnRenamed('condition_start_date','visit_date') \
+        .withColumnRenamed('condition_concept_id','concept_id') \
+        .join(person_id_df,'person_id','inner')
+
+    return conditions_df    
     
 
 @transform_pandas(
