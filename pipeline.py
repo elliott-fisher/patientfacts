@@ -301,9 +301,9 @@ def comorbidities_add(clean_covid_pos_person, our_concept_sets, condition_occurr
     # Subset person_conditions_df to records with comorbidities
     person_comorbidities_df = person_conditions_df.join(comorbidity_concept_set_members_df, 'concept_id', 'inner')
 
-    df = df.groupby('person_id','visit_date').pivot('column_name').agg(F.lit(1)).na.fill(0)
+    person_comorbidities_df = person_comorbidities_df.groupby('person_id','visit_date').pivot('column_name').agg(F.lit(1)).na.fill(0)
 
-    return df
+    return person_comorbidities_df
 
     
 
