@@ -299,7 +299,7 @@ def comorbidities_add(clean_covid_pos_person, our_concept_sets, condition_occurr
     # Subset person_conditions_df to records with comorbidities
     person_comorbidities_df = person_conditions_df.join(comorbidity_concept_set_members_df, 'concept_id', 'inner')
 
-    return comorbidity_concept_seperson_comorbidities_df
+    return person_comorbidities_df
 
     
 
