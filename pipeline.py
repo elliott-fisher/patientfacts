@@ -289,7 +289,7 @@ def comorbidities_add(clean_covid_pos_person, our_concept_sets, condition_occurr
     # Get all conditions for current set of Covid+ patients 
     person_conditions_df = (
         condition_occurrence 
-            .select('person_id', 'condition_start_date', 'condition_concept_id') 
+            .select('person_id', 'condition_start_date', 'condition_concept_id', 'first_diagnosis_date') 
             .where(F.col('condition_start_date').isNotNull()) 
             .withColumnRenamed('condition_start_date','visit_date') # renamed for ???
             .withColumnRenamed('condition_concept_id','concept_id') # renamed for next join
