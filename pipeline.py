@@ -270,23 +270,32 @@ def comorbidities_add(clean_covid_pos_person, our_concept_sets, condition_occurr
     Get all conditions for current set of Covid+ patients    
     where the condition_start_date is not null
     """
-    conditions_df = (
-        condition_occurrence 
-            .select('person_id', 'condition_start_date', 'condition_concept_id') 
-            .where(F.col('condition_start_date').isNotNull()) 
-            .withColumnRenamed('condition_start_date','visit_date') 
-            .withColumnRenamed('condition_concept_id','concept_id') 
-            .join(person_id_df,'person_id','inner')
-    )
-
     comorbidity_concept_names_df = (
         our_concept_sets
             .filter(our_concept_sets.domain.contains('condition_occurrence'))
             .filter(our_concept_sets.condition_type.contains('comorbidity'))
             .select('concept_set_name','indicator_prefix')
-    )        
+    )
 
-    return comorbidity_concept_names_df    
+    comorbidity_concept_set_members_df = (
+        concept_set_members
+            .select('concept_id','is_most_recent_version','concept_set_name')
+            .where(F.col('is_most_recent_version' == 'true'))
+            .join(comorbidity_concept_names_df, 'concept_set_name', 'inner')
+            .select('concept_id','indicator_prefix')
+    )
+
+    person_conditions_df = (
+        condition_occurrence 
+            .select('person_id', 'condition_start_date', 'condition_concept_id') 
+            .where(F.col('condition_start_date').isNotNull()) 
+            .withColumnRenamed('condition_start_date','visit_date') # renamed for ???
+            .withColumnRenamed('condition_concept_id','concept_id') # renamed for next join
+            .join(person_id_df,'person_id','inner')
+    )
+
+    return comorbidity_concept_set_members_df    
+
     
 
 @transform_pandas(
