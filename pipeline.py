@@ -264,7 +264,7 @@ created by Andrea Zhou.
 def comorbidities_add(clean_covid_pos_person, our_concept_sets, condition_occurrence, concept_set_members):
 
     #bring in only cohort patient ids
-    person_id_df = clean_covid_pos_person.select('person_id')
+    person_df = clean_covid_pos_person.select('person_id', 'first_diagnosis_date')
     
     """ 
     Get all conditions for current set of Covid+ patients    
@@ -293,7 +293,7 @@ def comorbidities_add(clean_covid_pos_person, our_concept_sets, condition_occurr
             .where(F.col('condition_start_date').isNotNull()) 
             .withColumnRenamed('condition_start_date','visit_date') # renamed for ???
             .withColumnRenamed('condition_concept_id','concept_id') # renamed for next join
-            .join(person_id_df,'person_id','inner')
+            .join(person_df,'person_id','inner')
     )
 
     # Subset person_conditions_df to records with comorbidities
