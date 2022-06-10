@@ -286,7 +286,7 @@ def comorbidities_add(clean_covid_pos_person, our_concept_sets, condition_occurr
             .select('concept_set_name','indicator_prefix')
     )        
 
-    return fusion_df    
+    return comorbidity_concept_names_df    
     
 
 @transform_pandas(
