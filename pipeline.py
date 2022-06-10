@@ -280,7 +280,7 @@ def comorbidities_add(clean_covid_pos_person, our_concept_sets, condition_occurr
     comorbidity_concept_set_members_df = (
         concept_set_members
             .select('concept_id','is_most_recent_version','concept_set_name')
-            .where(F.col('is_most_recent_version' == 'true'))
+            .where(F.col('is_most_recent_version') == 'true')
             .join(comorbidity_concept_names_df, 'concept_set_name', 'inner')
             .select('concept_id','indicator_prefix')
     )
