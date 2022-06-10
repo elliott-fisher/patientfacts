@@ -253,10 +253,10 @@ def clean_covid_pos_person(covid_pos_person):
 )
 def comorbidity_by_patient(comorbidity_by_visits):
 
-   # df =                             df.groupby('person_id', 'visit_date').agg(*[F.max(col).alias(col) for col in df.columns if col not in ('person_id','visit_date')])
-
     comorbidity_by_patient_df = comorbidity_by_visits.groupBy('person_id').agg(*[F.max(col).alias(col) for col in comorbidity_by_visits.columns if col not in ('person_id')]) 
-    #agg(F.max('CONGESTIVE_HEART_FAILURE').alias('CONGESTIVE_HEART_FAILURE'))
+
+    # THIS RETURNS fewer distinct person_id values than in the clean_covid_pos_person transform
+    # 5362 v 2145
 
     return comorbidity_by_patient_df
     
@@ -315,7 +315,7 @@ def comorbidity_by_visits(clean_covid_pos_person, our_concept_sets, condition_oc
     )
 
     # Subset person_conditions_df to records with comorbidities
-    person_comorbidities_df = person_conditions_df.join(comorbidity_concept_set_members_df, 'concept_id', 'inner')
+    person_comorbidities_df = person_conditions_df.join(comorbidity_concept_set_members_df, 'concept_id', 'left')
 
     #
     person_comorbidities_df = person_comorbidities_df.groupby('person_id','visit_date').pivot('column_name').agg(F.lit(1)).na.fill(0)
