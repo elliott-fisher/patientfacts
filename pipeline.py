@@ -218,8 +218,8 @@ def clean_covid_pos_person(covid_pos_person):
                 .when(F.col("race_concept_name").contains('Malaysian'), "Asian Non-Hispanic")   # 
                 .when(F.col("race_concept_name").contains('Indonesian'), "Asian Non-Hispanic")  #               
                 .when(F.col("race_concept_name").contains('Pacific'), "Native Hawaiian or Other Pacific Islander Non-Hispanic")
-                .when(F.col("race_concept_name").contains('Polynesian'), "Native Hawaiian or Other Pacific Islander Non-Hispanic")                      
-                .when(F.col("race_concept_name").contains('Native Hawaiian'), "Native Hawaiian or Other Pacific Islander Non-Hispanic") #                 
+                .when(F.col("race_concept_name").contains('Polynesian'), "Native Hawaiian or Other Pacific Islander Non-Hispanic")        
+                .when(F.col("race_concept_name").contains('Native Hawaiian'), "Native Hawaiian or Other Pacific Islander Non-Hispanic") # 
                 .when(F.col("race_concept_name").contains('Micronesian'), "Native Hawaiian or Other Pacific Islander Non-Hispanic")     #
                 .when(F.col("race_concept_name").contains('Melanesian'), "Native Hawaiian or Other Pacific Islander Non-Hispanic")      # 
                 .when(F.col("race_concept_name").contains('Other'), "Other Non-Hispanic")    #??
@@ -327,6 +327,8 @@ def comorbidity_by_visits(clean_covid_pos_person, our_concept_sets, condition_oc
             .join(comorbidity_concept_set_members_df, 'concept_id', 'left')
             .withColumnRenamed('condition_start_date','comorbidity_start_date')
     ) 
+
+    print(person_comorbidities_df.select('person_id').distint().count())
 
     # Transpose column_name (for comorbidities) and create flags for each 
     person_comorbidities_df = (
