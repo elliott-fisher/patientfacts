@@ -265,6 +265,7 @@ def comorbidity_by_patient(comorbidity_by_visits, clean_covid_pos_person):
 
     all_patients = (
         clean_covid_pos_person
+            .select('person_id')
             .join(comorbidity_by_patient_df, 'person_id', 'left')
     )
 
