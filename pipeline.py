@@ -395,12 +395,3 @@ def covid_pos_sample(ALL_COVID_POS_PATIENTS):
     return ALL_COVID_POS_PATIENTS.sample(False, proportion_of_patients_to_use, 111)
     
 
-@transform_pandas(
-    Output(rid="ri.foundry.main.dataset.b1ecba31-088b-44ab-8c48-df17ea259e9e"),
-    comorbidity_by_visits=Input(rid="ri.foundry.main.dataset.203392f0-b875-453c-88c5-77ca5223739e")
-)
-def unnamed(comorbidity_by_visits):
-
-    
-    
-
