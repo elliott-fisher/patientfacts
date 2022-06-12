@@ -409,8 +409,10 @@ def covid_pos_sample(ALL_COVID_POS_PATIENTS):
 )
 def unnamed(comorbidity_by_patient):
     df = (
-        comorbidity_by_patient.na.fill(0).withColumn("result" ,reduce(add, [col(x) for x in comorbidity_by_patient.drop('','')columns]))
-
+        comorbidity_by_patient
+            .na.fill(0)
+            .withColumn("result" ,reduce(add, [col(x) for x in comorbidity_by_patient.drop('person_id').columns]))
     )
-    
+
+    return df    
 
