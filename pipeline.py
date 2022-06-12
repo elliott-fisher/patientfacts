@@ -411,7 +411,7 @@ def unnamed(comorbidity_by_patient):
     df = (
         comorbidity_by_patient
             .na.fill(0)
-            .withColumn("result" ,reduce(add, [col(x) for x in comorbidity_by_patient.drop('person_id').columns]))
+            .withColumn("result" ,F.reduce(add, [col(x) for x in comorbidity_by_patient.drop('person_id').columns]))
     )
 
     return df    
