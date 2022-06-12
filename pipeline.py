@@ -253,19 +253,13 @@ def clean_covid_pos_person(covid_pos_person):
 )
 def comorbidity_by_patient(comorbidity_by_visits):
 
-    print(comorbidity_by_visits.columns)
-
     df = comorbidity_by_visits.drop('comorbidity_start_date')
 
-    print(df.drop('person_id').columns)
     comorbidity_by_patient_df = (
         df
             .groupBy('person_id')
             .agg(*[F.max(col).alias(col) for col in df.drop('person_id', 'null').columns]) 
-            #.agg(*[F.max(col).alias(col) for col in df.columns if col not in ('person_id')]) 
     )
-    # THIS RETURNS fewer distinct person_id values than in the clean_covid_pos_person transform
-    # 5362 v 2397. Are there 5362-2397 patients that have no comorbidities? 
 
     return comorbidity_by_patient_df
     
@@ -408,4 +402,11 @@ def unnamed(comorbidity_by_patient):
             .withColumn("result" ,sum(comorbidity_by_patient[colx] for colx in comorbidity_by_patient.drop('person_id').columns)) 
     )
     return df
+
+@transform_pandas(
+    Output(rid="ri.vector.main.execute.7d1f5cb0-5cfe-4dd1-92e8-19763ec5a2df"),
+    comorbidity_by_visits=Input(rid="ri.foundry.main.dataset.203392f0-b875-453c-88c5-77ca5223739e")
+)
+def unnamed_1(comorbidity_by_visits):
+    
 
