@@ -253,6 +253,8 @@ def clean_covid_pos_person(covid_pos_person):
 )
 def comorbidity_by_patient(comorbidity_by_visits):
 
+    print(comorbidity_by_visits.columns)
+
     df = comorbidity_by_visits.drop('comorbidity_start_date')
 
     print(df.drop('person_id').columns)
