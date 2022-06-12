@@ -408,14 +408,11 @@ def covid_pos_sample(ALL_COVID_POS_PATIENTS):
     comorbidity_by_patient=Input(rid="ri.foundry.main.dataset.f561b69a-b3e6-492e-a54e-88c5b4ae0b7e")
 )
 def unnamed(comorbidity_by_patient):
+
     df = (
         comorbidity_by_patient
-            .na.fill(0)
-            .withColumn("result" ,sum(comorbidity_by_patient[col] for col in comorbidity_by_patient.drop('person_id').columns)) 
+            .withColumn("result" ,sum(comorbidity_by_patient[colx] for colx in comorbidity_by_patient.drop('person_id').columns)) 
             #reduce(add, [col(x) for x in comorbidity_by_patient.drop('person_id').columns]))
     )
-
-#.agg(*[F.max(col).alias(col) for col in df.drop('person_id', 'null').columns]) 
-
-    return df    
+    return df
 
