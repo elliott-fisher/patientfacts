@@ -263,7 +263,7 @@ def comorbidity_by_patient(comorbidity_by_visits, clean_covid_pos_person):
             .agg(*[F.max(col).alias(col) for col in df.drop('person_id', 'null').columns]) 
     )
 
-    
+    # add in person_id values for patients w/o comorbidities; fill nulls with 0
     all_patients = (
         clean_covid_pos_person
             .select('person_id')
@@ -271,6 +271,7 @@ def comorbidity_by_patient(comorbidity_by_visits, clean_covid_pos_person):
             .na.fill(0)
     )
 
+    # add in all non-comorbidity patient facts
     all_patients_data = clean_covid_pos_person.join(all_patients, 'person_id', 'left')
 
     return all_patients
@@ -400,16 +401,5 @@ def covid_pos_sample(ALL_COVID_POS_PATIENTS):
     proportion_of_patients_to_use = 1.
 
     return ALL_COVID_POS_PATIENTS.sample(False, proportion_of_patients_to_use, 111)
-    
-
-@transform_pandas(
-    Output(rid="ri.foundry.main.dataset.72f788d2-c38c-4992-a0ea-e09fe0a0a03c"),
-    comorbidity_by_patient=Input(rid="ri.foundry.main.dataset.f561b69a-b3e6-492e-a54e-88c5b4ae0b7e")
-)
-def unnamed(comorbidity_by_patient):
-
-    df = comorbidity_by_patient.withColumn('comorbidity', sum(comorbidity_by_patient[col] for col in comorbidity_by_patient.drop))
-
-    sum(df[col] for col in df.columns))
     
 
