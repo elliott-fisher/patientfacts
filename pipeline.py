@@ -396,9 +396,13 @@ def covid_pos_sample(ALL_COVID_POS_PATIENTS):
     
 
 @transform_pandas(
-    Output(rid="ri.vector.main.execute.d33c5e62-958b-4b51-877a-fb6dcaf442c3"),
+    Output(rid="ri.foundry.main.dataset.d2e1df9c-c6fd-497c-b690-ec22f43bdbf5"),
     comorbidity_by_patient=Input(rid="ri.foundry.main.dataset.f561b69a-b3e6-492e-a54e-88c5b4ae0b7e")
 )
 def unnamed(comorbidity_by_patient):
+    df = (
+        comorbidity_by_patient
+
+    )
     
 
