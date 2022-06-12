@@ -249,9 +249,10 @@ def clean_covid_pos_person(covid_pos_person):
 
 @transform_pandas(
     Output(rid="ri.foundry.main.dataset.f561b69a-b3e6-492e-a54e-88c5b4ae0b7e"),
+    clean_covid_pos_person=Input(rid="ri.foundry.main.dataset.03e93e26-aa21-4f5d-b382-daaeea2a685e"),
     comorbidity_by_visits=Input(rid="ri.foundry.main.dataset.203392f0-b875-453c-88c5-77ca5223739e")
 )
-def comorbidity_by_patient(comorbidity_by_visits):
+def comorbidity_by_patient(comorbidity_by_visits, clean_covid_pos_person):
 
     df = comorbidity_by_visits.drop('comorbidity_start_date')
 
@@ -401,20 +402,4 @@ def unnamed(comorbidity_by_patient):
             .withColumn("result" ,sum(comorbidity_by_patient[colx] for colx in comorbidity_by_patient.drop('person_id').columns)) 
     )
     return df
-
-@transform_pandas(
-    Output(rid="ri.foundry.main.dataset.48bfe31f-61b9-4da1-9525-e23285ec5240"),
-    comorbidity_by_visits=Input(rid="ri.foundry.main.dataset.203392f0-b875-453c-88c5-77ca5223739e")
-)
-def unnamed_1(comorbidity_by_visits):
-
-    # Transpose column_name (for comorbidities) and create flags for each comorbidity
-    person_comorbidities_df = (
-        person_comorbidities_df
-            .groupby('person_id','comorbidity_start_date')
-            .pivot('column_name')
-            .agg(F.lit(1)) # flag is 1
-            .na.fill(0)    # replace nulls with 0
-    )
-    
 
