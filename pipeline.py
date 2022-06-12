@@ -324,7 +324,7 @@ def comorbidity_by_visits(clean_covid_pos_person, our_concept_sets, condition_oc
     # Subset person_conditions_df to records with comorbidities
     person_comorbidities_df = (
         person_conditions_df
-            .join(comorbidity_concept_set_members_df, 'concept_id', 'inner')
+            .join(comorbidity_concept_set_members_df, 'concept_id', 'left')
             .withColumnRenamed('condition_start_date','comorbidity_start_date')
     ) 
     print(person_comorbidities_df.select('person_id').distinct().count())
@@ -393,9 +393,11 @@ def covid_pos_sample(ALL_COVID_POS_PATIENTS):
     
 
 @transform_pandas(
-    Output(rid="ri.vector.main.execute.d8cd3035-4128-4c0c-befb-9b08ae2ffb5d"),
+    Output(rid="ri.foundry.main.dataset.b1ecba31-088b-44ab-8c48-df17ea259e9e"),
     comorbidity_by_visits=Input(rid="ri.foundry.main.dataset.203392f0-b875-453c-88c5-77ca5223739e")
 )
 def unnamed(comorbidity_by_visits):
+
+    
     
 
