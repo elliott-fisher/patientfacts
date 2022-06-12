@@ -418,10 +418,3 @@ def unnamed_1(comorbidity_by_visits):
     )
     
 
-@transform_pandas(
-    Output(rid="ri.vector.main.execute.b02d7fe3-f00c-4cca-873c-a64a245e77e3"),
-    clean_covid_pos_person=Input(rid="ri.foundry.main.dataset.03e93e26-aa21-4f5d-b382-daaeea2a685e")
-)
-def unnamed_2(clean_covid_pos_person):
-    
-
