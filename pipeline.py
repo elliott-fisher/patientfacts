@@ -253,10 +253,12 @@ def clean_covid_pos_person(covid_pos_person):
 )
 def comorbidity_by_patient(comorbidity_by_visits):
 
+    df = comorbidity_by_visits.drop('comorbidity_start_date')
+
     comorbidity_by_patient_df = (
-        comorbidity_by_visits
+        df
             .groupBy('person_id')
-            .agg(*[F.max(col).alias(col) for col in comorbidity_by_visits.columns if col not in ('person_id', 'comorbidity_start_date')]) 
+            .agg(*[F.max(col).alias(col) for col in df.columns if col not in ('person_id')]) 
     )
     # THIS RETURNS fewer distinct person_id values than in the clean_covid_pos_person transform
     # 5362 v 2397. Are there 5362-2397 patients that have no comorbidities? 
@@ -327,12 +329,13 @@ def comorbidity_by_visits(clean_covid_pos_person, our_concept_sets, condition_oc
     # Subset person_conditions_df to records with comorbidities
     person_comorbidities_df = (
         person_conditions_df
-            .join(comorbidity_concept_set_members_df, 'concept_id', 'left')
+            .join(comorbidity_concept_set_members_df, 'concept_id', 'inner')
             .withColumnRenamed('condition_start_date','comorbidity_start_date')
     ) 
     print(person_comorbidities_df.select('person_id').distinct().count())
 
     # Transpose column_name (for comorbidities) and create flags for each comorbidity
+    """
     person_comorbidities_df = (
         person_comorbidities_df
             .groupby('person_id','comorbidity_start_date')
@@ -340,6 +343,7 @@ def comorbidity_by_visits(clean_covid_pos_person, our_concept_sets, condition_oc
             .agg(F.lit(1)) # flag is 1
             .na.fill(0)    # replace nulls with 0
     )
+    """
 
     return person_comorbidities_df
 
@@ -401,7 +405,7 @@ def covid_pos_sample(ALL_COVID_POS_PATIENTS):
 )
 def unnamed(comorbidity_by_patient):
     df = (
-        comorbidity_by_patient
+        comorbidity_by_patient.na.fill(0).withColumn("result" ,reduce(add, [col(x) for x in comorbidity_by_patient.drop('','')columns]))
 
     )
     
