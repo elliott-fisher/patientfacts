@@ -322,12 +322,19 @@ def comorbidity_by_visits(clean_covid_pos_person, our_concept_sets, condition_oc
 # I think the where conditions are the problem!!!! Perhaps remove 2nd where and add missing persons with all 0 or null values in the next transform . . .
 
     # Subset person_conditions_df to records with comorbidities
-    person_comorbidities_df = person_conditions_df.join(comorbidity_concept_set_members_df, 'concept_id', 'inner')
+    person_comorbidities_df = (
+        person_conditions_df
+            .join(comorbidity_concept_set_members_df, 'concept_id', 'left')
+            .withColumnRenamed('condition_start_date','comorbidity_start_date')
+    ) 
 
-    #
-    person_comorbidities_df = person_comorbidities_df.groupby('person_id','visit_date').pivot('column_name').agg(F.lit(1)).na.fill(0)
+    # Transpose column_name (for comorbidities) and create flags for each 
+    person_comorbidities_df = (
+        person_comorbidities_df
+            .groupby('person_id','comorbidity_start_date').pivot('column_name').agg(F.lit(1)).na.fill(0)
+    )
 
-    return person_conditions_df
+    return person_comorbidities_df
 
     
 
