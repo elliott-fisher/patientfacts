@@ -274,6 +274,10 @@ Date:   06-10-2022
 Description:
 This process copies the logic found in the Logic Liasion conditions_of_interest transform 
 created by Andrea Zhou.  
+
+Notes:
+- Comorbidities (from condition_occurrence) with null condition_start_date values
+  are dropped
 """
 def comorbidity_by_visits(clean_covid_pos_person, our_concept_sets, condition_occurrence, concept_set_members):
 
@@ -308,13 +312,14 @@ def comorbidity_by_visits(clean_covid_pos_person, our_concept_sets, condition_oc
         condition_occurrence 
             .select('person_id', 'condition_start_date', 'condition_concept_id') 
             .where(F.col('condition_start_date').isNotNull()) 
-            .withColumnRenamed('condition_start_date','visit_date') # nicer name
+            #.withColumnRenamed('condition_start_date','comobidity_start_date') # nicer name
             .withColumnRenamed('condition_concept_id','concept_id') # renamed for next join
             .join(person_df,'person_id','inner')
-            .where(F.col('visit_date') <= F.col('first_diagnosis_date'))  # may want to revist this!!
+            #.where(F.col('comobidity_start_date') <= F.col('first_diagnosis_date'))  # may want to revist this!!
     )
 
 # why is this giving fewer distinct person_id values than prior 
+# I think the where conditions are the problem!!!! Perhaps remove 2nd where and add missing persons with all 0 or null values in the next transform . . .
 
     # Subset person_conditions_df to records with comorbidities
     person_comorbidities_df = person_conditions_df.join(comorbidity_concept_set_members_df, 'concept_id', 'inner')
