@@ -256,13 +256,19 @@ def comorbidity_by_patient(comorbidity_by_visits, clean_covid_pos_person):
 
     df = comorbidity_by_visits.drop('comorbidity_start_date')
 
+    # compress comorbidities flags into one record per patient
     comorbidity_by_patient_df = (
         df
             .groupBy('person_id')
             .agg(*[F.max(col).alias(col) for col in df.drop('person_id', 'null').columns]) 
     )
 
-    return comorbidity_by_patient_df
+    all_patients = (
+        clean_covid_pos_person
+            .join(comorbidity_by_patient_df, 'person_id', 'left')
+    )
+
+    return all_patients
     
 
 @transform_pandas(
