@@ -411,8 +411,11 @@ def unnamed(comorbidity_by_patient):
     df = (
         comorbidity_by_patient
             .na.fill(0)
-            .withColumn("result" ,F.reduce(add, [col(x) for x in comorbidity_by_patient.drop('person_id').columns]))
+            .withColumn("result" ,sum(col(x) for x in comorbidity_by_patient.drop('person_id').columns])) 
+            #reduce(add, [col(x) for x in comorbidity_by_patient.drop('person_id').columns]))
     )
+
+#.agg(*[F.max(col).alias(col) for col in df.drop('person_id', 'null').columns]) 
 
     return df    
 
