@@ -253,10 +253,13 @@ def clean_covid_pos_person(covid_pos_person):
 )
 def comorbidity_by_patient(comorbidity_by_visits):
 
-    comorbidity_by_patient_df = comorbidity_by_visits.groupBy('person_id').agg(*[F.max(col).alias(col) for col in comorbidity_by_visits.columns if col not in ('person_id')]) 
-
+    comorbidity_by_patient_df = (
+        comorbidity_by_visits
+            .groupBy('person_id')
+            .agg(*[F.max(col).alias(col) for col in comorbidity_by_visits.columns if col not in ('person_id')]) 
+    )
     # THIS RETURNS fewer distinct person_id values than in the clean_covid_pos_person transform
-    # 5362 v 2145
+    # 5362 v 2397. Are there 5362-2397 patients that have no comorbidities? 
 
     return comorbidity_by_patient_df
     
