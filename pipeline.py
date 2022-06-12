@@ -263,6 +263,7 @@ def comorbidity_by_patient(comorbidity_by_visits, clean_covid_pos_person):
             .agg(*[F.max(col).alias(col) for col in df.drop('person_id', 'null').columns]) 
     )
 
+    
     all_patients = (
         clean_covid_pos_person
             .select('person_id')
@@ -270,7 +271,7 @@ def comorbidity_by_patient(comorbidity_by_visits, clean_covid_pos_person):
             .na.fill(0)
     )
 
-    all_patients_data = clean_covid_pos_person.join(all_patients, 'person_id', 'left'))
+    all_patients_data = clean_covid_pos_person.join(all_patients, 'person_id', 'left')
 
     return all_patients
     
