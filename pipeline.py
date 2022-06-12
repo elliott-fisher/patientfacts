@@ -327,13 +327,15 @@ def comorbidity_by_visits(clean_covid_pos_person, our_concept_sets, condition_oc
             .join(comorbidity_concept_set_members_df, 'concept_id', 'inner')
             .withColumnRenamed('condition_start_date','comorbidity_start_date')
     ) 
-
     print(person_comorbidities_df.select('person_id').distinct().count())
 
-    # Transpose column_name (for comorbidities) and create flags for each 
+    # Transpose column_name (for comorbidities) and create flags for each comorbidity
     person_comorbidities_df = (
         person_comorbidities_df
-            .groupby('person_id','comorbidity_start_date').pivot('column_name').agg(F.lit(1)).na.fill(0)
+            .groupby('person_id','comorbidity_start_date')
+            .pivot('column_name')
+            .agg(F.lit(1)) # flag is 1
+            .na.fill(0)    # replace nulls with 0
     )
 
     return person_comorbidities_df
