@@ -324,7 +324,7 @@ def comorbidity_by_visits(clean_covid_pos_person, our_concept_sets, condition_oc
     # Subset person_conditions_df to records with comorbidities
     person_comorbidities_df = (
         person_conditions_df
-            .join(comorbidity_concept_set_members_df, 'concept_id', 'left')
+            .join(comorbidity_concept_set_members_df, 'concept_id', 'inner')
             .withColumnRenamed('condition_start_date','comorbidity_start_date')
     ) 
 
