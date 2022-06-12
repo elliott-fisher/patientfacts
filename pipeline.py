@@ -328,7 +328,7 @@ def comorbidity_by_visits(clean_covid_pos_person, our_concept_sets, condition_oc
             .withColumnRenamed('condition_start_date','comorbidity_start_date')
     ) 
 
-    print(person_comorbidities_df.select('person_id').distint().count())
+    print(person_comorbidities_df.select('person_id').distinct().count())
 
     # Transpose column_name (for comorbidities) and create flags for each 
     person_comorbidities_df = (
