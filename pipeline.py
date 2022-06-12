@@ -255,6 +255,7 @@ def comorbidity_by_patient(comorbidity_by_visits):
 
     df = comorbidity_by_visits.drop('comorbidity_start_date')
 
+    print(df.drop('person_id').columns)
     comorbidity_by_patient_df = (
         df
             .groupBy('person_id')
