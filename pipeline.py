@@ -294,14 +294,14 @@ Notes:
 def comorbidity_by_visits(clean_covid_pos_person, our_concept_sets, condition_occurrence, concept_set_members):
 
     #bring in only cohort patient ids
-    person_df = clean_covid_pos_person #.select('person_id', 'first_diagnosis_date')
+    person_df = clean_covid_pos_person 
     
 
     # Get comorbidity concept_set_name values from our list 
     comorbidity_concept_names_df = (
         our_concept_sets
             .filter(our_concept_sets.domain.contains('condition_occurrence'))
-            .filter(our_concept_sets.condition_type.contains('comorbidity'))
+            .filter(our_concept_sets.comorbidity == 1)
             .select('concept_set_name','column_name')
     )
 
@@ -400,9 +400,13 @@ def covid_pos_sample(ALL_COVID_POS_PATIENTS):
     
 
 @transform_pandas(
-    Output(rid="ri.vector.main.execute.aa3ec6cc-1855-46e9-9514-9ad69f2c2de5"),
+    Output(rid="ri.foundry.main.dataset.72f788d2-c38c-4992-a0ea-e09fe0a0a03c"),
     comorbidity_by_patient=Input(rid="ri.foundry.main.dataset.f561b69a-b3e6-492e-a54e-88c5b4ae0b7e")
 )
 def unnamed(comorbidity_by_patient):
+
+    df = comorbidity_by_patient.withColumn('comorbidity', sum(comorbidity_by_patient[col] for col in comorbidity_by_patient.drop))
+
+    sum(df[col] for col in df.columns))
     
 
