@@ -151,7 +151,7 @@ def comorbidity_by_patient(comorbidity_by_visits, clean_covid_pos_person):
     # add in all non-comorbidity patient facts
     all_patients_data = clean_covid_pos_person.join(all_patients, 'person_id', 'left')
 
-    return all_patients
+    return all_patients_data
     
 
 @transform_pandas(
