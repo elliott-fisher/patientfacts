@@ -270,6 +270,15 @@ def covid_pos_person(covid_pos_sample, location, manifest, person_lds):
     return with_manifest_df
 
 @transform_pandas(
+    Output(rid="ri.foundry.main.dataset.97993cef-0004-43d1-9455-b28322562810"),
+    comorbidity_by_patient=Input(rid="ri.foundry.main.dataset.f561b69a-b3e6-492e-a54e-88c5b4ae0b7e")
+)
+def covid_pos_person_fact(comorbidity_by_patient):
+
+    return comorbidity_by_patient
+    
+
+@transform_pandas(
     Output(rid="ri.foundry.main.dataset.57d6f26d-f01a-454d-bb1c-93408d9fdd51"),
     ALL_COVID_POS_PATIENTS=Input(rid="ri.foundry.main.dataset.d0f01e74-1ebb-46a5-b077-11864f9dd903")
 )
@@ -278,12 +287,5 @@ def covid_pos_sample(ALL_COVID_POS_PATIENTS):
     proportion_of_patients_to_use = 1.
 
     return ALL_COVID_POS_PATIENTS.sample(False, proportion_of_patients_to_use, 111)
-    
-
-@transform_pandas(
-    Output(rid="ri.vector.main.execute.bc901895-3ce3-4cb0-a243-82d2c6b848cb"),
-    comorbidity_by_patient=Input(rid="ri.foundry.main.dataset.f561b69a-b3e6-492e-a54e-88c5b4ae0b7e")
-)
-def unnamed(comorbidity_by_patient):
     
 
