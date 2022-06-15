@@ -206,7 +206,7 @@ def comorbidity_by_visits(clean_covid_pos_person, our_concept_sets, condition_oc
             .select('concept_id','column_name')
     )
 
-    comorbidity_concept_set_members_df.show()
+    comorbidity_concept_set_members_df.sort('column_name').show(truncate=False)
 
     """ 
     Get all conditions for current set of Covid+ patients    
