@@ -2,6 +2,17 @@ from pyspark.sql.window import Window
 from pyspark.sql import functions as F
 
 @transform_pandas(
+    Output(rid="ri.foundry.main.dataset.97993cef-0004-43d1-9455-b28322562810"),
+    comorbidity_by_patient=Input(rid="ri.foundry.main.dataset.f561b69a-b3e6-492e-a54e-88c5b4ae0b7e")
+)
+def COVID_POS_PERSON_FACT(comorbidity_by_patient):
+
+    covid_pos_person_fact_df = comorbidity_by_patient
+
+    return covid_pos_person_fact_df
+    
+
+@transform_pandas(
     Output(rid="ri.foundry.main.dataset.03e93e26-aa21-4f5d-b382-daaeea2a685e"),
     covid_pos_person=Input(rid="ri.foundry.main.dataset.628bfd8f-3d3c-4afb-b840-0daf4c07ac55")
 )
@@ -195,6 +206,8 @@ def comorbidity_by_visits(clean_covid_pos_person, our_concept_sets, condition_oc
             .select('concept_id','column_name')
     )
 
+    comorbidity_concept_set_members_df.show()
+
     """ 
     Get all conditions for current set of Covid+ patients    
     where the condition_start_date is not null
@@ -268,15 +281,6 @@ def covid_pos_person(covid_pos_sample, location, manifest, person_lds):
     )
 
     return with_manifest_df
-
-@transform_pandas(
-    Output(rid="ri.foundry.main.dataset.97993cef-0004-43d1-9455-b28322562810"),
-    comorbidity_by_patient=Input(rid="ri.foundry.main.dataset.f561b69a-b3e6-492e-a54e-88c5b4ae0b7e")
-)
-def covid_pos_person_fact(comorbidity_by_patient):
-
-    return comorbidity_by_patient
-    
 
 @transform_pandas(
     Output(rid="ri.foundry.main.dataset.57d6f26d-f01a-454d-bb1c-93408d9fdd51"),
