@@ -319,17 +319,20 @@ def pf_sample( COVID_POS_PERSON_FACT):
 )
 def pf_visits(pf_sample, microvisit_to_macrovisit_lds, our_concept_sets, concept_set_members):
 
-    # Get Emergency Dept Visit concept_set_name values from our list 
+    pf_visits_df = (
+        microvisit_to_macrovisit_lds
+            .select('person_id','visit_start_date','visit_concept_id','macrovisit_start_date','macrovisit_end_date')
+            .join(pf_sample,'person_id','inner')  
+    )
+
+    # Get list Emergency Dept Visit concept_set_name values from our list 
     ed_concept_names = list(
         our_concept_sets
             .filter(our_concept_sets.ed_visit == 1)
             .select('concept_set_name').toPandas()['concept_set_name']
     )
 
-    print(ed_concept_names)
-
-    # use macrovisit table to find ED only visits (that do not lead to hospitalization)   
-
+    # Get list of Emergency Dept Visit concept_id values    
     ed_concept_ids = (
         list(concept_set_members
                 .where((concept_set_members.concept_set_name.isin(ed_concept_names)) & (concept_set_members.is_most_recent_version=='true'))
@@ -337,11 +340,9 @@ def pf_visits(pf_sample, microvisit_to_macrovisit_lds, our_concept_sets, concept
             )
     )
 
-    print(ed_concept_ids)        
-    """
-    df_ED = df.where(df.macrovisit_start_date.isNull()&(df.visit_concept_id.isin(ED_concept_ids)))
-    df_ED = df_ED.withColumn('lab_minus_ED_visit_start_date', F.datediff('COVID_first_PCR_or_AG_lab_positive','visit_start_date'))    
+    df_ED = pf_visits_df.where(pf_visits_df.macrovisit_start_date.isNull() & (pf_visits_df.visit_concept_id.isin(ed_concept_ids)))
 
-    """
-    return our_concept_sets
+    # df_ED = df_ED.withColumn('lab_minus_ED_visit_start_date', F.datediff('COVID_first_PCR_or_AG_lab_positive','visit_start_date'))    
+
+    return df_ED
 
