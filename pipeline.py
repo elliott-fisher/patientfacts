@@ -302,3 +302,10 @@ def pf_sample( COVID_POS_PERSON_FACT):
     return COVID_POS_PERSON_FACT.sample(False, proportion_of_patients_to_use, 111)
     
 
+@transform_pandas(
+    Output(rid="ri.vector.main.execute.e440e4c2-b0d7-424d-b14b-664f38d0b274"),
+    pf_sample=Input(rid="ri.foundry.main.dataset.844b440d-a9cc-44eb-8a4b-d5d3fd280e87")
+)
+def unnamed(pf_sample):
+    
+
