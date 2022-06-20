@@ -226,7 +226,7 @@ def comorbidity_by_visits(clean_covid_pos_person, our_concept_sets, condition_oc
             .where(F.col('condition_start_date').isNotNull()) 
             .withColumnRenamed('condition_concept_id','concept_id') # renamed for next join
             .join(person_df,'person_id','inner')
-            #.where(F.col('comobidity_start_date') <= F.col('first_diagnosis_date'))  # may want to revist this!!
+            #.where(F.col('comobidity_start_date') <= F.col('first_poslab_or_diagnosis_date'))  # may want to revist this!!
     )
 
     # Subset person_conditions_df to records with comorbidities
@@ -313,9 +313,17 @@ def pf_sample( COVID_POS_PERSON_FACT):
 @transform_pandas(
     Output(rid="ri.foundry.main.dataset.c4d2279d-88e2-4360-90f2-43df60f1961f"),
     microvisit_to_macrovisit_lds=Input(rid="ri.foundry.main.dataset.5af2c604-51e0-4afa-b1ae-1e5fa2f4b905"),
+    our_concept_sets=Input(rid="ri.foundry.main.dataset.f80a92e0-cdc4-48d9-b4b7-42e60d42d9e0"),
     pf_sample=Input(rid="ri.foundry.main.dataset.844b440d-a9cc-44eb-8a4b-d5d3fd280e87")
 )
-def pf_visits(pf_sample, microvisit_to_macrovisit_lds):
+def pf_visits(pf_sample, microvisit_to_macrovisit_lds, our_concept_sets):
+
+    # Get Emergency Dept Visit concept_set_name values from our list 
+    ed_concept_names_df = (
+        our_concept_sets
+            .filter(our_concept_sets.ed_visit == 1)
+            .select('concept_set_name')
+    )
 
     pf_with_visits = 
 
