@@ -309,6 +309,8 @@ def pf_sample( COVID_POS_PERSON_FACT):
 )
 def pf_visits(pf_sample, microvisit_to_macrovisit_lds):
 
+    pf_with_visits = 
+
     # use macrovisit table to find ED only visits (that do not lead to hospitalization)   
     ED_concept_ids = list(concepts_df.where((concepts_df.concept_set_name=="[PASC] ED Visits") & (concepts_df.is_most_recent_version=='true')).select('concept_id').toPandas()['concept_id'])
     df_ED = df.where(df.macrovisit_start_date.isNull()&(df.visit_concept_id.isin(ED_concept_ids)))
