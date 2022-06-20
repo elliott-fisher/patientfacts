@@ -312,23 +312,34 @@ def pf_sample( COVID_POS_PERSON_FACT):
 
 @transform_pandas(
     Output(rid="ri.foundry.main.dataset.c4d2279d-88e2-4360-90f2-43df60f1961f"),
+    concept_set_members=Input(rid="ri.foundry.main.dataset.e670c5ad-42ca-46a2-ae55-e917e3e161b6"),
     microvisit_to_macrovisit_lds=Input(rid="ri.foundry.main.dataset.5af2c604-51e0-4afa-b1ae-1e5fa2f4b905"),
     our_concept_sets=Input(rid="ri.foundry.main.dataset.f80a92e0-cdc4-48d9-b4b7-42e60d42d9e0"),
     pf_sample=Input(rid="ri.foundry.main.dataset.844b440d-a9cc-44eb-8a4b-d5d3fd280e87")
 )
-def pf_visits(pf_sample, microvisit_to_macrovisit_lds, our_concept_sets):
+def pf_visits(pf_sample, microvisit_to_macrovisit_lds, our_concept_sets, concept_set_members):
 
     # Get Emergency Dept Visit concept_set_name values from our list 
-    ed_concept_names_df = (
+    ed_concept_names = (
         our_concept_sets
             .filter(our_concept_sets.ed_visit == 1)
-            .select('concept_set_name')
+            .select('concept_set_name').toPandas()['concept_set_name']
     )
 
-    pf_with_visits = 
+    print(ed_concept_names)
 
     # use macrovisit table to find ED only visits (that do not lead to hospitalization)   
-    ED_concept_ids = list(concepts_df.where((concepts_df.concept_set_name=="[PASC] ED Visits") & (concepts_df.is_most_recent_version=='true')).select('concept_id').toPandas()['concept_id'])
+    """
+    ed_concept_ids = (
+        list(concept_set_members
+                .where((concept_set_members.concept_set_name.isin() "[PASC] ED Visits") & (concept_set_members.is_most_recent_version=='true'))
+                .select('concept_id').toPandas()['concept_id']
+            )
+    )        
+
     df_ED = df.where(df.macrovisit_start_date.isNull()&(df.visit_concept_id.isin(ED_concept_ids)))
     df_ED = df_ED.withColumn('lab_minus_ED_visit_start_date', F.datediff('COVID_first_PCR_or_AG_lab_positive','visit_start_date'))    
+
+    """
+    return our_concept_sets
 
