@@ -329,14 +329,16 @@ def pf_visits(pf_sample, microvisit_to_macrovisit_lds, our_concept_sets, concept
     print(ed_concept_names)
 
     # use macrovisit table to find ED only visits (that do not lead to hospitalization)   
-    """
+
     ed_concept_ids = (
         list(concept_set_members
-                .where((concept_set_members.concept_set_name.isin() "[PASC] ED Visits") & (concept_set_members.is_most_recent_version=='true'))
+                .where((concept_set_members.concept_set_name.isin(ed_concept_names)) & (concept_set_members.is_most_recent_version=='true'))
                 .select('concept_id').toPandas()['concept_id']
             )
-    )        
+    )
 
+    print(ed_concept_ids)        
+    """
     df_ED = df.where(df.macrovisit_start_date.isNull()&(df.visit_concept_id.isin(ED_concept_ids)))
     df_ED = df_ED.withColumn('lab_minus_ED_visit_start_date', F.datediff('COVID_first_PCR_or_AG_lab_positive','visit_start_date'))    
 
