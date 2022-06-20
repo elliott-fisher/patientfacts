@@ -303,9 +303,14 @@ def pf_sample( COVID_POS_PERSON_FACT):
     
 
 @transform_pandas(
-    Output(rid="ri.vector.main.execute.e440e4c2-b0d7-424d-b14b-664f38d0b274"),
+    Output(rid="ri.foundry.main.dataset.c4d2279d-88e2-4360-90f2-43df60f1961f"),
+    microvisit_to_macrovisit_lds=Input(rid="ri.foundry.main.dataset.5af2c604-51e0-4afa-b1ae-1e5fa2f4b905"),
     pf_sample=Input(rid="ri.foundry.main.dataset.844b440d-a9cc-44eb-8a4b-d5d3fd280e87")
 )
-def unnamed(pf_sample):
-    
+def pf_visits(pf_sample, microvisit_to_macrovisit_lds):
+
+    # use macrovisit table to find ED only visits (that do not lead to hospitalization)   
+    ED_concept_ids = list(concepts_df.where((concepts_df.concept_set_name=="[PASC] ED Visits") & (concepts_df.is_most_recent_version=='true')).select('concept_id').toPandas()['concept_id'])
+    df_ED = df.where(df.macrovisit_start_date.isNull()&(df.visit_concept_id.isin(ED_concept_ids)))
+    df_ED = df_ED.withColumn('lab_minus_ED_visit_start_date', F.datediff('COVID_first_PCR_or_AG_lab_positive','visit_start_date'))    
 
