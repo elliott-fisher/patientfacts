@@ -340,13 +340,17 @@ def pf_visits(pf_sample, microvisit_to_macrovisit_lds, our_concept_sets, concept
                 .select('concept_id').toPandas()['concept_id']
             )
     )
+    print(ed_concept_ids)
 
     """ 
     Get ED visits and
     Create column with number of days between ED visit and Covid+ indicator date
     """
-    df_ED = pf_visits_df.where(pf_visits_df.macrovisit_start_date.isNull() & (pf_visits_df.visit_concept_id.isin(ed_concept_ids)))
-    df_ED = df_ED.withColumn('lab_minus_ED_visit_start_date', F.datediff('first_poslab_or_diagnosis_date','visit_start_date'))    
-
+    df_ED = (
+        pf_visits_df
+            .where(pf_visits_df.macrovisit_start_date.isNull() & (pf_visits_df.visit_concept_id.isin(ed_concept_ids)))
+            .withColumn('lab_minus_ED_visit_start_date', F.datediff('first_poslab_or_diagnosis_date','visit_start_date'))    
+    )
+    
     return df_ED
 
