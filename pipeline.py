@@ -320,7 +320,7 @@ def pf_sample( COVID_POS_PERSON_FACT):
 def pf_visits(pf_sample, microvisit_to_macrovisit_lds, our_concept_sets, concept_set_members):
 
     # Get Emergency Dept Visit concept_set_name values from our list 
-    ed_concept_names = (
+    ed_concept_names = list(
         our_concept_sets
             .filter(our_concept_sets.ed_visit == 1)
             .select('concept_set_name').toPandas()['concept_set_name']
