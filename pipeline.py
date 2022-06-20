@@ -135,6 +135,13 @@ def clean_covid_pos_person(covid_pos_person):
 
     return cpp_zip_df
 
+#################################################
+## Global imports and functions included below ##
+#################################################
+
+from pyspark.sql.window import Window
+from pyspark.sql import functions as F
+
 @transform_pandas(
     Output(rid="ri.foundry.main.dataset.f561b69a-b3e6-492e-a54e-88c5b4ae0b7e"),
     clean_covid_pos_person=Input(rid="ri.foundry.main.dataset.03e93e26-aa21-4f5d-b382-daaeea2a685e"),
