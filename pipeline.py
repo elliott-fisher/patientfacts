@@ -319,6 +319,7 @@ def pf_sample( COVID_POS_PERSON_FACT):
 )
 def pf_visits(pf_sample, microvisit_to_macrovisit_lds, our_concept_sets, concept_set_members):
 
+    # microvisit_to_macrovisit_lds subsetted to contain Covid+ patients
     pf_visits_df = (
         microvisit_to_macrovisit_lds
             .select('person_id','visit_start_date','visit_concept_id','macrovisit_start_date','macrovisit_end_date')
