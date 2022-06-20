@@ -41,7 +41,7 @@ def clean_covid_pos_person(covid_pos_person):
             .withColumn("date_of_birth", 
                         F.to_date("date_of_birth", format=None))
             .withColumn("age_at_covid", 
-                        F.floor(F.months_between("first_diagnosis_date", "date_of_birth", roundOff=False)/12))
+                        F.floor(F.months_between("first_poslab_or_diagnosis_date", "date_of_birth", roundOff=False)/12))
                         
     ).drop('new_year_of_birth','new_month_of_birth','new_day_of_birth')
     
@@ -189,6 +189,8 @@ created by Andrea Zhou.
 Notes:
 - Comorbidities (from condition_occurrence) with null condition_start_date values
   are dropped
+- Comorbidities are included if recorded at anytime (i.e. could be after Covid+) 
+
 """
 def comorbidity_by_visits(clean_covid_pos_person, our_concept_sets, condition_occurrence, concept_set_members):
 
@@ -217,7 +219,6 @@ def comorbidity_by_visits(clean_covid_pos_person, our_concept_sets, condition_oc
     Get all conditions for current set of Covid+ patients    
     where the condition_start_date is not null
 
-    WARNING: Filters on  ** visit_date <=  first_diagnosis_date **
     """
     person_conditions_df = (
         condition_occurrence 
