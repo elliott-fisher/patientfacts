@@ -256,17 +256,27 @@ def comorbidity_by_visits(clean_covid_pos_person, our_concept_sets, condition_oc
     manifest=Input(rid="ri.foundry.main.dataset.b1e99f7f-5dcd-4503-985a-bbb28edc8f6f"),
     person_lds=Input(rid="ri.foundry.main.dataset.50cae11a-4afb-457d-99d4-55b4bc2cbe66")
 )
+"""
+Drops out antigen only records
+Adds in all person columns
+Gets person address info from location
+Gets treating institutions from manifest 
+"""
 def covid_pos_person(covid_pos_sample, location, manifest, person_lds):
 
+    # Drop rows with antibody only diagnosis 
+    covid_pos_no_antibody_diag_df = covid_pos_sample.filter(F.col('first_poslab_or_diagnosis_date').isNotNull())
+
     with_person_df = (
-        covid_pos_sample.join(
-            person_lds.select(  'person_id','year_of_birth','month_of_birth','day_of_birth',
-                                'ethnicity_concept_name','race_concept_name','gender_concept_name',
-                                'location_id','data_partner_id'),
-            covid_pos_sample.person_id == person_lds.person_id,
-            how = "left"
+        covid_pos_no_antibody_diag_df
+            .join(
+                person_lds.select('person_id','year_of_birth','month_of_birth','day_of_birth',
+                                  'ethnicity_concept_name','race_concept_name','gender_concept_name',
+                                  'location_id','data_partner_id'),
+                covid_pos_no_antibody_diag_df.person_id == person_lds.person_id,
+                how = "left"
         ).drop(person_lds.person_id)  
-    )
+    ).drop(covid_pos_no_antibody_diag_df.first_antigen_or_poslab_or_diagnosis_date)
     
 
     with_location_df = (
