@@ -352,5 +352,5 @@ def pf_visits(pf_sample, microvisit_to_macrovisit_lds, our_concept_sets, concept
             .withColumn('num_days_covid_date_ed_start_date', F.datediff('first_poslab_or_diagnosis_date','visit_start_date'))    
     )
     
-    return df_ED
+    return pf_visits_df
 
