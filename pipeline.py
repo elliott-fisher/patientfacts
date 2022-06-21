@@ -294,7 +294,7 @@ def covid_pos_person(covid_pos_sample, location, manifest, person_lds):
 )
 def covid_pos_sample(ALL_COVID_POS_PATIENTS):
 
-    proportion_of_patients_to_use = .0001
+    proportion_of_patients_to_use = 1.
 
     return ALL_COVID_POS_PATIENTS.sample(False, proportion_of_patients_to_use, 111)
     
