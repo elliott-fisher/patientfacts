@@ -319,6 +319,20 @@ def pf_sample( COVID_POS_PERSON_FACT):
 )
 def pf_visits(pf_sample, microvisit_to_macrovisit_lds, our_concept_sets, concept_set_members):
 
+    """
+    Potential Parameters 
+
+    covid_associated_ED_or_hosp_requires_lab_AND_diagnosis
+     - Use for switching Covid positive indicator:
+     - Default is to use first_poslab_or_diagnosis_date
+
+    num_days_before_index / num_days_after_index
+     - these values need to be discussed!!!  
+    """
+    covid_associated_ED_or_hosp_requirement = 'POSLAB OR DIAGNOSIS'
+    num_days_before_index = 1
+    num_days_after_index = 16
+
     # microvisit_to_macrovisit_lds subsetted to contain Covid+ patients
     pf_visits_df = (
         microvisit_to_macrovisit_lds
@@ -360,9 +374,44 @@ def pf_visits(pf_sample, microvisit_to_macrovisit_lds, our_concept_sets, concept
     df_hosp = (
         pf_visits_df
             .where(pf_visits_df.macrovisit_start_date.isNotNull())
-            .withColumn("num_days_covid_dates_hosp_start_date", 
+            .withColumn("num_days_covid_dt_minus_hosp_start_dt", 
                 F.datediff("first_poslab_or_diagnosis_date","macrovisit_start_date"))
     )
 
+    if covid_associated_ED_or_hosp_requirement == 'POSLAB OR DIAGNOSIS':
+        df_hosp = (
+            df_hosp
+                .withColumn("covid_pcr_or_ag_associated_hospitalization", 
+                    F.when(F.col('num_days_covid_dt_minus_hosp_start_dt').between(-num_days_after_index,num_days_before_index), 1)
+                        .otherwise(0))
+                .withColumn("COVID_lab_positive_and_diagnosed_hospitalization", 
+                    F.when( (F.col('covid_pcr_or_ag_associated_hospitalization')==1) & 
+                            (F.col('lab_minus_diagnosis_date').between(-num_days_after_index,num_days_before_index)), 1)
+                        .otherwise(0))
+                .where(F.col('COVID_lab_positive_and_diagnosed_hospitalization')==1)
+                .withColumnRenamed('macrovisit_start_date','covid_hospitalization_start_date')
+                .withColumnRenamed('macrovisit_end_date','covid_hospitalization_end_date')
+                .select('person_id', 'covid_hospitalization_start_date', 'covid_hospitalization_end_date')
+                .dropDuplicates())
+    """                
+    else:
+        df_hosp = df_hosp.withColumn("earliest_index_minus_hosp_start_date", F.datediff("COVID_first_poslab_or_diagnosis_date","macrovisit_start_date")) 
+
+        #first lab or diagnosis date based, hospitalization visit
+        df_hosp = (df_hosp.withColumn("covid_lab_or_diagnosis_associated_hospitilization", F.when(F.col('earliest_index_minus_hosp_start_date').between(-num_days_after_index,num_days_before_index), 1).otherwise(0))
+                .where(F.col('covid_lab_or_diagnosis_associated_hospitilization')==1)
+                .withColumnRenamed('macrovisit_start_date','covid_hospitalization_start_date')
+                .withColumnRenamed('macrovisit_end_date','covid_hospitalization_end_date')
+                .select('person_id', 'covid_hospitalization_start_date', 'covid_hospitalization_end_date')
+                .dropDuplicates())
+    """
+
     return df_hosp
+
+@transform_pandas(
+    Output(rid="ri.vector.main.execute.2f96f4ea-5dfa-4a9a-9e4b-410fe3294fbf"),
+    pf_sample=Input(rid="ri.foundry.main.dataset.844b440d-a9cc-44eb-8a4b-d5d3fd280e87")
+)
+def unnamed(pf_sample):
+    
 
