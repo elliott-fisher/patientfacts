@@ -294,7 +294,7 @@ def covid_pos_person(covid_pos_sample, location, manifest, person_lds):
 )
 def covid_pos_sample(ALL_COVID_POS_PATIENTS):
 
-    proportion_of_patients_to_use = 1.
+    proportion_of_patients_to_use = .0001
 
     return ALL_COVID_POS_PATIENTS.sample(False, proportion_of_patients_to_use, 111)
     
@@ -337,6 +337,7 @@ def pf_visits(pf_sample, microvisit_to_macrovisit_lds, our_concept_sets, concept
     pf_visits_df = (
         microvisit_to_macrovisit_lds
             .select('person_id','visit_start_date','visit_concept_id','macrovisit_start_date','macrovisit_end_date')
+            .withColumn('poslab_minus_diagnosis_date', F.datediff('first_pos_pcr_antigen_date', 'first_pos_diagnosis_date'))
             .join(pf_sample,'person_id','inner')  
     )
 
@@ -378,7 +379,8 @@ def pf_visits(pf_sample, microvisit_to_macrovisit_lds, our_concept_sets, concept
                 F.datediff("first_poslab_or_diagnosis_date","macrovisit_start_date"))
     )
 
-    if covid_associated_ED_or_hosp_requirement == 'POSLAB OR DIAGNOSIS':
+    """  
+    if covid_associated_ED_or_hosp_requirement == 'POSLAB AND DIAGNOSIS':
         df_hosp = (
             df_hosp
                 .withColumn("covid_pcr_or_ag_associated_hospitalization", 
@@ -393,7 +395,7 @@ def pf_visits(pf_sample, microvisit_to_macrovisit_lds, our_concept_sets, concept
                 .withColumnRenamed('macrovisit_end_date','covid_hospitalization_end_date')
                 .select('person_id', 'covid_hospitalization_start_date', 'covid_hospitalization_end_date')
                 .dropDuplicates())
-    """                
+              
     else:
         df_hosp = df_hosp.withColumn("earliest_index_minus_hosp_start_date", F.datediff("COVID_first_poslab_or_diagnosis_date","macrovisit_start_date")) 
 
