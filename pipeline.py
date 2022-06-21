@@ -358,7 +358,7 @@ def pf_visits(pf_sample, microvisit_to_macrovisit_lds, our_concept_sets, concept
     Create column with number of days between Hospitalization start date and Covid+ indicator date
     """
     df_hosp = (
-        df_hosp
+        pf_visits_df
             .where(pf_visits_df.macrovisit_start_date.isNotNull())
             .withColumn("num_days_covid_dates_hosp_start_date", 
                 F.datediff("first_poslab_or_diagnosis_date","macrovisit_start_date"))
