@@ -305,7 +305,7 @@ def covid_pos_sample(ALL_COVID_POS_PATIENTS):
 )
 def pf_sample( COVID_POS_PERSON_FACT):
 
-    proportion_of_patients_to_use = .01
+    proportion_of_patients_to_use = .001
 
     return COVID_POS_PERSON_FACT.sample(False, proportion_of_patients_to_use, 111)
     
@@ -344,13 +344,25 @@ def pf_visits(pf_sample, microvisit_to_macrovisit_lds, our_concept_sets, concept
 
     """ 
     Get ED visits and
-    Create column with number of days between ED visit and Covid+ indicator date
+    Create column with number of days between ED start date and Covid+ indicator date
     """
     df_ED = (
         pf_visits_df
             .where(pf_visits_df.macrovisit_start_date.isNull() & (pf_visits_df.visit_concept_id.isin(ed_concept_ids)))
-            .withColumn('num_days_covid_date_ed_start_date', F.datediff('first_poslab_or_diagnosis_date','visit_start_date'))    
+            .withColumn('num_days_covid_date_ed_start_date', 
+                F.datediff('first_poslab_or_diagnosis_date','visit_start_date'))    
     )
     
-    return pf_visits_df
+    """ 
+    Get Hospitalization visits and
+    Create column with number of days between Hospitalization start date and Covid+ indicator date
+    """
+    df_hosp = pf_visits_df.where(pf_visits_df.macrovisit_start_date.isNotNull())
+    df_hosp = (
+        df_hosp
+            .withColumn("num_days_covid_dates_hosp_start_date", 
+                F.datediff("first_poslab_or_diagnosis_date","macrovisit_start_date"))
+    )
+
+    return df_hosp
 
