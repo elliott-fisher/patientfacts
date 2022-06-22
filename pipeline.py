@@ -504,10 +504,14 @@ def pf_visits(pf_sample, microvisit_to_macrovisit_lds, our_concept_sets, concept
     DISCUSS:
     ??? Why is this the minimum End Date ???? 
     """
-    df = ED_df.groupby('person_id').agg(
-            F.min('covid_ED_only_start_date').alias('first_COVID_ED_only_start_date'),
+    df = (
+        ED_df
+        .groupby('person_id')
+        .agg(F.min('covid_ED_only_start_date').alias('first_COVID_ED_only_start_date'),
             #F.min('covid_hospitalization_start_date').alias('first_COVID_hospitalization_start_date'),
-            #F.min('covid_hospitalization_end_date').alias('first_COVID_hospitalization_end_date'))
+            #F.min('covid_hospitalization_end_date').alias('first_COVID_hospitalization_end_date')
+        )
+    )
 
     return df
 
