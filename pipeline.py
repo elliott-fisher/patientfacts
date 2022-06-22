@@ -384,6 +384,7 @@ def pf_visits(pf_sample, microvisit_to_macrovisit_lds, our_concept_sets, concept
     first_index_minus_ED_date - used for hospitalizations that require *either*
                                 poslab or diagnosis
     """
+    """
     df_ED = (
         pf_visits_df
             .where(pf_visits_df.macrovisit_start_date.isNull() & (pf_visits_df.visit_concept_id.isin(ed_concept_ids)))
@@ -392,6 +393,31 @@ def pf_visits(pf_sample, microvisit_to_macrovisit_lds, our_concept_sets, concept
             .withColumn("first_index_minus_ED_date", 
                 F.datediff("first_poslab_or_diagnosis_date", "visit_start_date"))         
     )
+
+    if requires_lab_and_diagnosis:
+        df_ED = (
+            df_ED
+                .withColumn("poslab_associated_ED", 
+                    F.when(F.col('poslab_minus_ED_date').between(-num_days_after, num_days_before), 1).otherwise(0))
+                .withColumn("poslab_and_diag_associated_ED", 
+                    F.when( (F.col('poslab_associated_ED') == 1) & 
+                            (F.col('poslab_minus_diag_date').between(-num_days_after, num_days_before)), 1).otherwise(0))
+                .where(F.col('poslab_and_diag_associated_ED') == 1)
+                .withColumnRenamed('visit_start_date','covid_ED_only_start_date')
+                .select('person_id', 'covid_ED_only_start_date')
+                .dropDuplicates()
+        )     
+    else:
+        df_ED = (
+            df_ED
+                .withColumn("poslab_or_diag_associated_ED", 
+                    F.when(F.col('first_index_minus_ED_date').between(-num_days_after, num_days_before), 1).otherwise(0))
+                .where(F.col('poslab_or_diag_associated_ED') == 1)
+                .withColumnRenamed('visit_start_date','covid_ED_only_start_date')
+                .select('person_id', 'covid_ED_only_start_date')
+                .dropDuplicates()
+        )        
+    """
 
     """ 
     Get Hospitalization visits (non-null macrovisit_start_date values) and
@@ -449,7 +475,7 @@ def pf_visits(pf_sample, microvisit_to_macrovisit_lds, our_concept_sets, concept
                 .withColumnRenamed('macrovisit_end_date',   'covid_hospitalization_end_date')
                 .select('person_id', 'covid_hospitalization_start_date', 'covid_hospitalization_end_date')
                 .dropDuplicates()
-    )     
+        )     
     else:
         df_hosp = (
             df_hosp
@@ -459,7 +485,8 @@ def pf_visits(pf_sample, microvisit_to_macrovisit_lds, our_concept_sets, concept
                 .withColumnRenamed('macrovisit_start_date', 'covid_hospitalization_start_date')
                 .withColumnRenamed('macrovisit_end_date',   'covid_hospitalization_end_date')
                 .select('person_id', 'covid_hospitalization_start_date', 'covid_hospitalization_end_date')
-                .dropDuplicates())
+                .dropDuplicates()
+        )
 
     """
     Collapse all values to one row per person using min start and end dates.
@@ -472,5 +499,5 @@ def pf_visits(pf_sample, microvisit_to_macrovisit_lds, our_concept_sets, concept
             F.min('covid_hospitalization_start_date').alias('first_COVID_hospitalization_start_date'),
             F.min('covid_hospitalization_end_date').alias('first_COVID_hospitalization_end_date'))
 
-    return df_hosp
+    return df
 
