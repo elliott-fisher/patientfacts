@@ -430,7 +430,6 @@ def pf_visits(pf_sample, microvisit_to_macrovisit_lds, our_concept_sets, concept
     first_index_minus_hosp_date - used for hospitalizations that require *either*
                                   poslab or diagnosis
     """
-    """
     df_hosp = (
         pf_visits_df
             .where(pf_visits_df.macrovisit_start_date.isNotNull())
@@ -439,7 +438,6 @@ def pf_visits(pf_sample, microvisit_to_macrovisit_lds, our_concept_sets, concept
             .withColumn("first_index_minus_hosp_date", 
                 F.datediff("first_poslab_or_diagnosis_date", "macrovisit_start_date"))    
     )
-    """
 
     """
     To have a hospitalization associated with *both* Positive PCR/Antigen test  
@@ -467,7 +465,6 @@ def pf_visits(pf_sample, microvisit_to_macrovisit_lds, our_concept_sets, concept
     (whichever comes first:  PCR/Antigen or Diagnosis date) and the 
     hospitalization date must be close together. 
     """
-    """
     if requires_lab_and_diagnosis:
         df_hosp = (
             df_hosp
@@ -493,10 +490,10 @@ def pf_visits(pf_sample, microvisit_to_macrovisit_lds, our_concept_sets, concept
                 .select('person_id', 'covid_hospitalization_start_date', 'covid_hospitalization_end_date')
                 .dropDuplicates()
         )
-    """
+    
 
     # Join ED and hosp dataframes
-    # ed_hosp_df = df_hosp.join(ED_df,'person_id', 'outer')
+    ed_hosp_df = df_hosp.join(ED_df,'person_id', 'outer')
 
     """
     Collapse all values to one row per person using min start and end dates.
@@ -505,11 +502,11 @@ def pf_visits(pf_sample, microvisit_to_macrovisit_lds, our_concept_sets, concept
     ??? Why is this the minimum End Date ???? 
     """
     df = (
-        ED_df
+        ed_hosp_df
         .groupby('person_id')
         .agg(F.min('covid_ED_only_start_date').alias('first_COVID_ED_only_start_date'),
-            #F.min('covid_hospitalization_start_date').alias('first_COVID_hospitalization_start_date'),
-            #F.min('covid_hospitalization_end_date').alias('first_COVID_hospitalization_end_date')
+             F.min('covid_hospitalization_start_date').alias('first_COVID_hospitalization_start_date'),
+             F.min('covid_hospitalization_end_date').alias('first_COVID_hospitalization_end_date')
         )
     )
 
