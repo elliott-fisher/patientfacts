@@ -19,6 +19,13 @@ def COVID_POS_PERSON_FACT(pf_visits):
     
 
 @transform_pandas(
+    Output(rid="ri.foundry.main.dataset.ce1538cf-712c-492a-8f8c-adb5afa71b08"),
+    microvisit_to_macrovisit_lds=Input(rid="ri.foundry.main.dataset.5af2c604-51e0-4afa-b1ae-1e5fa2f4b905")
+)
+def explore_m_to_m(microvisit_to_macrovisit_lds):
+    
+
+@transform_pandas(
     Output(rid="ri.foundry.main.dataset.03e93e26-aa21-4f5d-b382-daaeea2a685e"),
     pf_locations=Input(rid="ri.foundry.main.dataset.628bfd8f-3d3c-4afb-b840-0daf4c07ac55")
 )
@@ -680,13 +687,6 @@ def pf_visits_sample( microvisit_to_macrovisit_lds, our_concept_sets, concept_se
 
     return pf_er_hosp_agg_df
 
-    
-
-@transform_pandas(
-    Output(rid="ri.vector.main.execute.4b66f55a-a40e-4984-9eb9-a044429db390"),
-    microvisit_to_macrovisit_lds=Input(rid="ri.foundry.main.dataset.5af2c604-51e0-4afa-b1ae-1e5fa2f4b905")
-)
-def unnamed(microvisit_to_macrovisit_lds):
     
 
 @transform_pandas(
