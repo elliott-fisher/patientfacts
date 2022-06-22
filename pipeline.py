@@ -336,87 +336,125 @@ def pf_visits(pf_sample, microvisit_to_macrovisit_lds, our_concept_sets, concept
      - Use for switching Covid positive indicator:
      - Default is to use first_poslab_or_diagnosis_date
 
-    num_days_before_index / num_days_after_index
+    num_days_before / num_days_after
      - these values need to be discussed!!!  
     """
-    covid_associated_ED_or_hosp_requirement = 'POSLAB OR DIAGNOSIS'
-    num_days_before_index = 1
-    num_days_after_index = 16
+    requires_lab_and_diagnosis = True
+    num_days_before = 1
+    num_days_after = 16
 
-    # microvisit_to_macrovisit_lds subsetted to contain Covid+ patients
+    # Reduce patient columns and create column with the number of 
+    # of days between the poslab and diagnosis dates
+    pf_df = (
+        pf_sample
+            .select('person_id', 'first_pos_pcr_antigen_date', 'first_pos_diagnosis_date', 'first_poslab_or_diagnosis_date')
+            .withColumn('poslab_minus_diag_date', F.datediff('first_pos_pcr_antigen_date', 'first_pos_diagnosis_date')
+    )
+
+    # Reduce microvisit_to_macrovisit_lds columns and joined to contain patients
     pf_visits_df = (
         microvisit_to_macrovisit_lds
             .select('person_id','visit_start_date','visit_concept_id','macrovisit_start_date','macrovisit_end_date')
-            .withColumn('poslab_minus_diagnosis_date', F.datediff('first_pos_pcr_antigen_date', 'first_pos_diagnosis_date'))
-            .join(pf_sample,'person_id','inner')  
+            .join(pf_df,'person_id','inner')  
     )
 
-    # Get list Emergency Dept Visit concept_set_name values from our list 
+    """
+    Get list Emergency Dept Visit concept_set_name values from our spreadsheet 
+    and use to create a list of associated concept_id values  
+    """
     ed_concept_names = list(
         our_concept_sets
             .filter(our_concept_sets.ed_visit == 1)
             .select('concept_set_name').toPandas()['concept_set_name']
-    )
-
-    # Get list of Emergency Dept Visit concept_id values    
+    )    
     ed_concept_ids = (
         list(concept_set_members
-                .where((concept_set_members.concept_set_name.isin(ed_concept_names)) & (concept_set_members.is_most_recent_version=='true'))
+                .where(( concept_set_members.concept_set_name.isin(ed_concept_names)) & 
+                        (concept_set_members.is_most_recent_version=='true'))
                 .select('concept_id').toPandas()['concept_id']
-            )
+        )
     )
     print(ed_concept_ids)
 
     """ 
-    Get ED visits and
-    Create column with number of days between ED start date and Covid+ indicator date
+    Get Emergency Dept visits (null macrovisit_start_date values) and
+    create the following columns: 
+    poslab_minus_ED_date      - used for hospitalizations that require *both*
+                                poslab and diagnosis
+    first_index_minus_ED_date - used for hospitalizations that require *either*
+                                poslab or diagnosis
     """
     df_ED = (
         pf_visits_df
             .where(pf_visits_df.macrovisit_start_date.isNull() & (pf_visits_df.visit_concept_id.isin(ed_concept_ids)))
-            .withColumn('num_days_covid_date_ed_start_date', 
-                F.datediff('first_poslab_or_diagnosis_date','visit_start_date'))    
+            .withColumn('poslab_minus_ED_date', 
+                F.datediff('first_pos_pcr_antigen_date',     'visit_start_date'))
+            .withColumn("first_index_minus_ED_date", 
+                F.datediff("first_poslab_or_diagnosis_date", "visit_start_date"))         
     )
-    
+
     """ 
-    Get Hospitalization visits and
-    Create column with number of days between Hospitalization start date and Covid+ indicator date
+    Get Hospitalization visits (non-null macrovisit_start_date values) and
+    create the following columns: 
+    poslab_minus_hosp_date      - used for hospitalizations that require *both*
+                                  poslab and diagnosis
+    first_index_minus_hosp_date - used for hospitalizations that require *either*
+                                  poslab or diagnosis
     """
     df_hosp = (
         pf_visits_df
             .where(pf_visits_df.macrovisit_start_date.isNotNull())
-            .withColumn("num_days_covid_dt_minus_hosp_start_dt", 
-                F.datediff("first_poslab_or_diagnosis_date","macrovisit_start_date"))
+            .withColumn("poslab_minus_hosp_date", 
+                F.datediff("first_pos_pcr_antigen_date",     "macrovisit_start_date"))
+            .withColumn("first_index_minus_hosp_date", 
+                F.datediff("first_poslab_or_diagnosis_date", "macrovisit_start_date"))    
     )
 
-    """  
-    if covid_associated_ED_or_hosp_requirement == 'POSLAB AND DIAGNOSIS':
+    """
+    To have a hospitalization associated with Positive PCR/Antigen test and 
+    Covid Diagnosis, the test and diagnosis date need to be close together*
+    and the test and hospitalization must be close together. 
+    
+    Specifically:
+    1. The hosp date must be within [num_days_before, num_days_after] of the poslab date 
+       AND
+    2. The diag date must be within [num_days_before, num_days_after] of the poslab date
+
+    Example:
+    =======================================================================
+    [num_days_before, num_days_after] = [1,16]
+    poslab date     = June 10 [June 9, June 16]
+    diag date       = June 12 
+    hosp date       = June 22
+    
+    1. Hospitalization must occur between June 9 and June 26: true
+    2. Diagnosis date  must occur between June 9 and June 26: true
+    """
+    if requires_lab_and_diagnosis:
         df_hosp = (
             df_hosp
-                .withColumn("covid_pcr_or_ag_associated_hospitalization", 
-                    F.when(F.col('num_days_covid_dt_minus_hosp_start_dt').between(-num_days_after_index,num_days_before_index), 1)
-                        .otherwise(0))
-                .withColumn("COVID_lab_positive_and_diagnosed_hospitalization", 
-                    F.when( (F.col('covid_pcr_or_ag_associated_hospitalization')==1) & 
-                            (F.col('lab_minus_diagnosis_date').between(-num_days_after_index,num_days_before_index)), 1)
-                        .otherwise(0))
-                .where(F.col('COVID_lab_positive_and_diagnosed_hospitalization')==1)
+                .withColumn("poslab_associated_hosp", 
+                    F.when(F.col('poslab_minus_hosp_date').between(-num_days_after, num_days_before), 1).otherwise(0))
+                .withColumn("poslab_and_diag_associated_hosp", 
+                    F.when( (F.col('poslab_associated_hosp')==1) & 
+                            (F.col('poslab_minus_diag_date').between(-num_days_after, num_days_before)), 1).otherwise(0))
+                .where(F.col('poslab_and_diag_associated_hosp')==1)
                 .withColumnRenamed('macrovisit_start_date','covid_hospitalization_start_date')
                 .withColumnRenamed('macrovisit_end_date','covid_hospitalization_end_date')
                 .select('person_id', 'covid_hospitalization_start_date', 'covid_hospitalization_end_date')
-                .dropDuplicates())
-              
+                .dropDuplicates()
+    )     
     else:
-        df_hosp = df_hosp.withColumn("earliest_index_minus_hosp_start_date", F.datediff("COVID_first_poslab_or_diagnosis_date","macrovisit_start_date")) 
-
         #first lab or diagnosis date based, hospitalization visit
-        df_hosp = (df_hosp.withColumn("covid_lab_or_diagnosis_associated_hospitilization", F.when(F.col('earliest_index_minus_hosp_start_date').between(-num_days_after_index,num_days_before_index), 1).otherwise(0))
-                .where(F.col('covid_lab_or_diagnosis_associated_hospitilization')==1)
+        df_hosp = (
+            df_hosp
+                .withColumn("poslab_or_diag_associated_hosp", 
+                    F.when(F.col('first_index_minus_hosp_date').between(-num_days_after, num_days_before), 1).otherwise(0))
+                .where(F.col('poslab_or_diag_associated_hosp')==1)
                 .withColumnRenamed('macrovisit_start_date','covid_hospitalization_start_date')
                 .withColumnRenamed('macrovisit_end_date','covid_hospitalization_end_date')
                 .select('person_id', 'covid_hospitalization_start_date', 'covid_hospitalization_end_date')
                 .dropDuplicates())
-    """
 
     return df_hosp
 
