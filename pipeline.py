@@ -3,20 +3,28 @@ from pyspark.sql import functions as F
 
 @transform_pandas(
     Output(rid="ri.foundry.main.dataset.97993cef-0004-43d1-9455-b28322562810"),
-    comorbidity_by_patient=Input(rid="ri.foundry.main.dataset.f561b69a-b3e6-492e-a54e-88c5b4ae0b7e")
+    pf_visits=Input(rid="ri.foundry.main.dataset.c4d2279d-88e2-4360-90f2-43df60f1961f")
 )
-def COVID_POS_PERSON_FACT(comorbidity_by_patient):
+"""
+================================================================================
+Final node
 
-    covid_pos_person_fact_df = comorbidity_by_patient
+================================================================================
+"""
+def COVID_POS_PERSON_FACT(pf_visits):
 
-    return covid_pos_person_fact_df
+    pf_df = pf_visits
+
+    return pf_df
     
 
 @transform_pandas(
     Output(rid="ri.foundry.main.dataset.03e93e26-aa21-4f5d-b382-daaeea2a685e"),
-    covid_pos_person=Input(rid="ri.foundry.main.dataset.628bfd8f-3d3c-4afb-b840-0daf4c07ac55")
+    pf_locations=Input(rid="ri.foundry.main.dataset.628bfd8f-3d3c-4afb-b840-0daf4c07ac55")
 )
-def clean_covid_pos_person(covid_pos_person):
+def pf_clean(pf_locations):
+
+    pf_df = pf_locations
 
     """
     Creates columns: date_of_birth, age_at_covid  
@@ -26,16 +34,16 @@ def clean_covid_pos_person(covid_pos_person):
         - day_of_birth
     """
     with_dob_age_df = (
-        covid_pos_person
+        pf_df
             .withColumn("new_year_of_birth",  
-                        F.when(covid_pos_person.year_of_birth.isNull(),1)
-                        .otherwise(covid_pos_person.year_of_birth))
+                        F.when(pf_df.year_of_birth.isNull(),1)
+                        .otherwise(pf_df.year_of_birth))
             .withColumn("new_month_of_birth", 
-                        F.when(covid_pos_person.month_of_birth.isNull(),1)
-                        .otherwise(covid_pos_person.month_of_birth))
+                        F.when(pf_df.month_of_birth.isNull(),1)
+                        .otherwise(pf_df.month_of_birth))
             .withColumn("new_day_of_birth", 
-                        F.when(covid_pos_person.day_of_birth.isNull(),1)
-                        .otherwise(covid_pos_person.day_of_birth))
+                        F.when(pf_df.day_of_birth.isNull(),1)
+                        .otherwise(pf_df.day_of_birth))
             .withColumn("date_of_birth", 
                         F.concat_ws("-", F.col("new_year_of_birth"), F.col("new_month_of_birth"), F.col("new_day_of_birth")))
             .withColumn("date_of_birth", 
@@ -144,10 +152,13 @@ from pyspark.sql import functions as F
 
 @transform_pandas(
     Output(rid="ri.foundry.main.dataset.f561b69a-b3e6-492e-a54e-88c5b4ae0b7e"),
-    clean_covid_pos_person=Input(rid="ri.foundry.main.dataset.03e93e26-aa21-4f5d-b382-daaeea2a685e"),
-    comorbidity_by_visits=Input(rid="ri.foundry.main.dataset.203392f0-b875-453c-88c5-77ca5223739e")
+    pf_clean=Input(rid="ri.foundry.main.dataset.03e93e26-aa21-4f5d-b382-daaeea2a685e"),
+    visit_comobidities=Input(rid="ri.foundry.main.dataset.203392f0-b875-453c-88c5-77ca5223739e")
 )
-def comorbidity_by_patient(comorbidity_by_visits, clean_covid_pos_person):
+def pf_comorbidities(visit_comobidities, pf_clean):
+
+    comorbidity_by_visits   = visit_comobidities
+    pf_df                   = pf_clean
 
     df = comorbidity_by_visits.drop('comorbidity_start_date')
 
@@ -160,101 +171,24 @@ def comorbidity_by_patient(comorbidity_by_visits, clean_covid_pos_person):
 
     # add in person_id values for patients w/o comorbidities; fill nulls with 0
     all_patients = (
-        clean_covid_pos_person
+        pf_df
             .select('person_id')
             .join(comorbidity_by_patient_df, 'person_id', 'left')
             .na.fill(0)
     )
 
     # add in all non-comorbidity patient facts
-    all_patients_data = clean_covid_pos_person.join(all_patients, 'person_id', 'left')
+    all_patients_data = pf_df.join(all_patients, 'person_id', 'left')
 
     return all_patients_data
     
 
 @transform_pandas(
-    Output(rid="ri.foundry.main.dataset.203392f0-b875-453c-88c5-77ca5223739e"),
-    clean_covid_pos_person=Input(rid="ri.foundry.main.dataset.03e93e26-aa21-4f5d-b382-daaeea2a685e"),
-    concept_set_members=Input(rid="ri.foundry.main.dataset.e670c5ad-42ca-46a2-ae55-e917e3e161b6"),
-    condition_occurrence=Input(rid="ri.foundry.main.dataset.900fa2ad-87ea-4285-be30-c6b5bab60e86"),
-    our_concept_sets=Input(rid="ri.foundry.main.dataset.f80a92e0-cdc4-48d9-b4b7-42e60d42d9e0")
-)
-"""
-Author: Elliott Fisher
-Date:   06-10-2022
-Description:
-This process copies the logic found in the Logic Liasion conditions_of_interest transform 
-created by Andrea Zhou.  
-
-Notes:
-- Comorbidities (from condition_occurrence) with null condition_start_date values
-  are dropped
-- Comorbidities are included if recorded at anytime (i.e. could be after Covid+) 
-
-"""
-def comorbidity_by_visits(clean_covid_pos_person, our_concept_sets, condition_occurrence, concept_set_members):
-
-    #bring in only cohort patient ids
-    person_df = clean_covid_pos_person 
-    
-
-    # Get comorbidity concept_set_name values from our list 
-    comorbidity_concept_names_df = (
-        our_concept_sets
-            .filter(our_concept_sets.domain.contains('condition_occurrence'))
-            .filter(our_concept_sets.comorbidity == 1)
-            .select('concept_set_name','column_name')
-    )
-
-    # Get most recent version of comorbidity concept_id values from concept_set_members 
-    comorbidity_concept_set_members_df = (
-        concept_set_members
-            .select('concept_id','is_most_recent_version','concept_set_name')
-            .where(F.col('is_most_recent_version') == 'true')
-            .join(comorbidity_concept_names_df, 'concept_set_name', 'inner')
-            .select('concept_id','column_name')
-    )
-
-    """ 
-    Get all conditions for current set of Covid+ patients    
-    where the condition_start_date is not null
-
-    """
-    person_conditions_df = (
-        condition_occurrence 
-            .select('person_id', 'condition_start_date', 'condition_concept_id') 
-            .where(F.col('condition_start_date').isNotNull()) 
-            .withColumnRenamed('condition_concept_id','concept_id') # renamed for next join
-            .join(person_df,'person_id','inner')
-            #.where(F.col('comobidity_start_date') <= F.col('first_poslab_or_diagnosis_date'))  # may want to revist this!!
-    )
-
-    # Subset person_conditions_df to records with comorbidities
-    person_comorbidities_df = (
-        person_conditions_df
-            .join(comorbidity_concept_set_members_df, 'concept_id', 'inner')
-            .withColumnRenamed('condition_start_date','comorbidity_start_date')
-    ) 
-
-    # Transpose column_name (for comorbidities) and create flags for each comorbidity
-    person_comorbidities_df = (
-        person_comorbidities_df
-            .groupby('person_id','comorbidity_start_date')
-            .pivot('column_name')
-            .agg(F.lit(1)) # flag is 1
-            .na.fill(0)    # replace nulls with 0
-    )
-
-    return person_comorbidities_df
-
-    
-
-@transform_pandas(
     Output(rid="ri.foundry.main.dataset.628bfd8f-3d3c-4afb-b840-0daf4c07ac55"),
-    covid_pos_sample=Input(rid="ri.foundry.main.dataset.57d6f26d-f01a-454d-bb1c-93408d9fdd51"),
     location=Input(rid="ri.foundry.main.dataset.efac41e8-cc64-49bf-9007-d7e22a088318"),
     manifest=Input(rid="ri.foundry.main.dataset.b1e99f7f-5dcd-4503-985a-bbb28edc8f6f"),
-    person_lds=Input(rid="ri.foundry.main.dataset.50cae11a-4afb-457d-99d4-55b4bc2cbe66")
+    person_lds=Input(rid="ri.foundry.main.dataset.50cae11a-4afb-457d-99d4-55b4bc2cbe66"),
+    pf_sample=Input(rid="ri.foundry.main.dataset.57d6f26d-f01a-454d-bb1c-93408d9fdd51")
 )
 """
 Drops out antigen only records
@@ -262,10 +196,12 @@ Adds in all person columns
 Gets person address info from location
 Gets treating institutions from manifest 
 """
-def covid_pos_person(covid_pos_sample, location, manifest, person_lds):
+def pf_locations(pf_sample, location, manifest, person_lds):
+
+    pf_df = pf_sample
 
     # Drop rows with antibody only diagnosis 
-    covid_pos_no_antibody_diag_df = covid_pos_sample.filter(F.col('first_poslab_or_diagnosis_date').isNotNull())
+    covid_pos_no_antibody_diag_df = pf_df.filter(F.col('first_poslab_or_diagnosis_date').isNotNull())
 
     with_person_df = (
         covid_pos_no_antibody_diag_df
@@ -302,7 +238,7 @@ def covid_pos_person(covid_pos_sample, location, manifest, person_lds):
     Output(rid="ri.foundry.main.dataset.57d6f26d-f01a-454d-bb1c-93408d9fdd51"),
     ALL_COVID_POS_PATIENTS=Input(rid="ri.foundry.main.dataset.d0f01e74-1ebb-46a5-b077-11864f9dd903")
 )
-def covid_pos_sample(ALL_COVID_POS_PATIENTS):
+def pf_sample(ALL_COVID_POS_PATIENTS):
 
     proportion_of_patients_to_use = 1.
 
@@ -311,9 +247,9 @@ def covid_pos_sample(ALL_COVID_POS_PATIENTS):
 
 @transform_pandas(
     Output(rid="ri.foundry.main.dataset.844b440d-a9cc-44eb-8a4b-d5d3fd280e87"),
-    COVID_POS_PERSON_FACT=Input(rid="ri.foundry.main.dataset.97993cef-0004-43d1-9455-b28322562810")
+    pf_comorbidities=Input(rid="ri.foundry.main.dataset.f561b69a-b3e6-492e-a54e-88c5b4ae0b7e")
 )
-def pf_sample( COVID_POS_PERSON_FACT):
+def pf_sample2(pf_comorbidities):
 
     proportion_of_patients_to_use = .001
 
@@ -325,11 +261,11 @@ def pf_sample( COVID_POS_PERSON_FACT):
     concept_set_members=Input(rid="ri.foundry.main.dataset.e670c5ad-42ca-46a2-ae55-e917e3e161b6"),
     microvisit_to_macrovisit_lds=Input(rid="ri.foundry.main.dataset.5af2c604-51e0-4afa-b1ae-1e5fa2f4b905"),
     our_concept_sets=Input(rid="ri.foundry.main.dataset.f80a92e0-cdc4-48d9-b4b7-42e60d42d9e0"),
-    pf_sample=Input(rid="ri.foundry.main.dataset.844b440d-a9cc-44eb-8a4b-d5d3fd280e87")
+    pf_comorbidities=Input(rid="ri.foundry.main.dataset.f561b69a-b3e6-492e-a54e-88c5b4ae0b7e")
 )
-def pf_visits(pf_sample, microvisit_to_macrovisit_lds, our_concept_sets, concept_set_members):
+def pf_visits( microvisit_to_macrovisit_lds, our_concept_sets, concept_set_members, pf_comorbidities):
 
-    pf_df = pf_sample
+    pf_df = pf_comorbidities
 
     # Reduce patient columns and create column with the number of 
     # of days between the poslab and diagnosis dates
@@ -531,4 +467,87 @@ def pf_visits(pf_sample, microvisit_to_macrovisit_lds, our_concept_sets, concept
     pf_er_hosp_agg_df = pf_df.join(er_hosp_agg_df, 'person_id', 'left')    
 
     return pf_er_hosp_agg_df
+
+@transform_pandas(
+    Output(rid="ri.vector.main.execute.00f3797d-c021-46d6-8d15-e46c5111c623"),
+    pf_sample2=Input(rid="ri.foundry.main.dataset.844b440d-a9cc-44eb-8a4b-d5d3fd280e87")
+)
+def unnamed(pf_sample2):
+    
+
+@transform_pandas(
+    Output(rid="ri.foundry.main.dataset.203392f0-b875-453c-88c5-77ca5223739e"),
+    concept_set_members=Input(rid="ri.foundry.main.dataset.e670c5ad-42ca-46a2-ae55-e917e3e161b6"),
+    condition_occurrence=Input(rid="ri.foundry.main.dataset.900fa2ad-87ea-4285-be30-c6b5bab60e86"),
+    our_concept_sets=Input(rid="ri.foundry.main.dataset.f80a92e0-cdc4-48d9-b4b7-42e60d42d9e0"),
+    pf_clean=Input(rid="ri.foundry.main.dataset.03e93e26-aa21-4f5d-b382-daaeea2a685e")
+)
+"""
+Author: Elliott Fisher
+Date:   06-10-2022
+Description:
+This process copies the logic found in the Logic Liasion conditions_of_interest transform 
+created by Andrea Zhou.  
+
+Notes:
+- Comorbidities (from condition_occurrence) with null condition_start_date values
+  are dropped
+- Comorbidities are included if recorded at anytime (i.e. could be after Covid+) 
+
+"""
+def visit_comobidities(pf_clean, our_concept_sets, condition_occurrence, concept_set_members):
+    
+    pf_df = pf_clean
+    
+
+    # Get comorbidity concept_set_name values from our list 
+    comorbidity_concept_names_df = (
+        our_concept_sets
+            .filter(our_concept_sets.domain.contains('condition_occurrence'))
+            .filter(our_concept_sets.comorbidity == 1)
+            .select('concept_set_name','column_name')
+    )
+
+    # Get most recent version of comorbidity concept_id values from concept_set_members 
+    comorbidity_concept_set_members_df = (
+        concept_set_members
+            .select('concept_id','is_most_recent_version','concept_set_name')
+            .where(F.col('is_most_recent_version') == 'true')
+            .join(comorbidity_concept_names_df, 'concept_set_name', 'inner')
+            .select('concept_id','column_name')
+    )
+
+    """ 
+    Get all conditions for current set of Covid+ patients    
+    where the condition_start_date is not null
+
+    """
+    person_conditions_df = (
+        condition_occurrence 
+            .select('person_id', 'condition_start_date', 'condition_concept_id') 
+            .where(F.col('condition_start_date').isNotNull()) 
+            .withColumnRenamed('condition_concept_id','concept_id') # renamed for next join
+            .join(pf_df,'person_id','inner')
+            #.where(F.col('comobidity_start_date') <= F.col('first_poslab_or_diagnosis_date'))  # may want to revist this!!
+    )
+
+    # Subset person_conditions_df to records with comorbidities
+    person_comorbidities_df = (
+        person_conditions_df
+            .join(comorbidity_concept_set_members_df, 'concept_id', 'inner')
+            .withColumnRenamed('condition_start_date','comorbidity_start_date')
+    ) 
+
+    # Transpose column_name (for comorbidities) and create flags for each comorbidity
+    person_comorbidities_df = (
+        person_comorbidities_df
+            .groupby('person_id','comorbidity_start_date')
+            .pivot('column_name')
+            .agg(F.lit(1)) # flag is 1
+            .na.fill(0)    # replace nulls with 0
+    )
+
+    return person_comorbidities_df
+
+    
 
