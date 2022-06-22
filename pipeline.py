@@ -253,17 +253,6 @@ def pf_sample(ALL_COVID_POS_PATIENTS):
     
 
 @transform_pandas(
-    Output(rid="ri.foundry.main.dataset.844b440d-a9cc-44eb-8a4b-d5d3fd280e87"),
-    pf_comorbidities=Input(rid="ri.foundry.main.dataset.f561b69a-b3e6-492e-a54e-88c5b4ae0b7e")
-)
-def pf_sample2(pf_comorbidities):
-
-    proportion_of_patients_to_use = .001
-
-    return COVID_POS_PERSON_FACT.sample(False, proportion_of_patients_to_use, 111)
-    
-
-@transform_pandas(
     Output(rid="ri.foundry.main.dataset.c4d2279d-88e2-4360-90f2-43df60f1961f"),
     concept_set_members=Input(rid="ri.foundry.main.dataset.e670c5ad-42ca-46a2-ae55-e917e3e161b6"),
     microvisit_to_macrovisit_lds=Input(rid="ri.foundry.main.dataset.5af2c604-51e0-4afa-b1ae-1e5fa2f4b905"),
