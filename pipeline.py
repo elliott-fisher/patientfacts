@@ -411,8 +411,8 @@ def pf_visits(pf_sample, microvisit_to_macrovisit_lds, our_concept_sets, concept
     )
 
     """
-    To have a hospitalization associated with Positive PCR/Antigen test and 
-    Covid Diagnosis, the test and diagnosis date need to be close together*
+    To have a hospitalization associated with *both* Positive PCR/Antigen test  
+    and Covid Diagnosis, the test and diagnosis date need to be close together
     and the test and hospitalization must be close together. 
     
     Specifically:
@@ -429,6 +429,12 @@ def pf_visits(pf_sample, microvisit_to_macrovisit_lds, our_concept_sets, concept
     
     1. Hospitalization must occur between June 9 and June 26: true
     2. Diagnosis date  must occur between June 9 and June 26: true
+    =======================================================================
+
+    Otherwise, to get hospitalizations associated with *either* a positive 
+    PCR/Antigen test *or* a positive Covid Diagnosis, the first index date
+    (whichever comes first:  PCR/Antigen or Diagnosis date) and the 
+    hospitalization date must be close together. 
     """
     if requires_lab_and_diagnosis:
         df_hosp = (
@@ -436,25 +442,35 @@ def pf_visits(pf_sample, microvisit_to_macrovisit_lds, our_concept_sets, concept
                 .withColumn("poslab_associated_hosp", 
                     F.when(F.col('poslab_minus_hosp_date').between(-num_days_after, num_days_before), 1).otherwise(0))
                 .withColumn("poslab_and_diag_associated_hosp", 
-                    F.when( (F.col('poslab_associated_hosp')==1) & 
+                    F.when( (F.col('poslab_associated_hosp') == 1) & 
                             (F.col('poslab_minus_diag_date').between(-num_days_after, num_days_before)), 1).otherwise(0))
-                .where(F.col('poslab_and_diag_associated_hosp')==1)
-                .withColumnRenamed('macrovisit_start_date','covid_hospitalization_start_date')
-                .withColumnRenamed('macrovisit_end_date','covid_hospitalization_end_date')
+                .where(F.col('poslab_and_diag_associated_hosp') == 1)
+                .withColumnRenamed('macrovisit_start_date', 'covid_hospitalization_start_date')
+                .withColumnRenamed('macrovisit_end_date',   'covid_hospitalization_end_date')
                 .select('person_id', 'covid_hospitalization_start_date', 'covid_hospitalization_end_date')
                 .dropDuplicates()
     )     
     else:
-        #first lab or diagnosis date based, hospitalization visit
         df_hosp = (
             df_hosp
                 .withColumn("poslab_or_diag_associated_hosp", 
                     F.when(F.col('first_index_minus_hosp_date').between(-num_days_after, num_days_before), 1).otherwise(0))
-                .where(F.col('poslab_or_diag_associated_hosp')==1)
-                .withColumnRenamed('macrovisit_start_date','covid_hospitalization_start_date')
-                .withColumnRenamed('macrovisit_end_date','covid_hospitalization_end_date')
+                .where(F.col('poslab_or_diag_associated_hosp') == 1)
+                .withColumnRenamed('macrovisit_start_date', 'covid_hospitalization_start_date')
+                .withColumnRenamed('macrovisit_end_date',   'covid_hospitalization_end_date')
                 .select('person_id', 'covid_hospitalization_start_date', 'covid_hospitalization_end_date')
                 .dropDuplicates())
+
+    """
+    Collapse all values to one row per person using min start and end dates.
+
+    DISCUSS:
+    ??? Why is this the minimum End Date ???? 
+    """
+    df = df_hosp.groupby('person_id').agg(
+            #F.min('covid_ED_only_start_date').alias('first_COVID_ED_only_start_date'),
+            F.min('covid_hospitalization_start_date').alias('first_COVID_hospitalization_start_date'),
+            F.min('covid_hospitalization_end_date').alias('first_COVID_hospitalization_end_date'))
 
     return df_hosp
 
