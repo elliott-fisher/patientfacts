@@ -470,14 +470,17 @@ def pf_visits( microvisit_to_macrovisit_lds, our_concept_sets, concept_set_membe
 )
 def start_equal_end(pf_visits):
 
-    return (
+    df = (
         pf_visits
         .select('person_id', 'first_COVID_hospitalization_start_date', 'first_COVID_hospitalization_end_date')
         .filter(F.col('first_COVID_hospitalization_start_date').isNotNull() & 
                 F.col('first_COVID_hospitalization_end_date').isNotNull()   &
                 ('first_COVID_hospitalization_start_date' == 'first_COVID_hospitalization_end_date')
         )
-    )            
+    )   
+
+    return df
+         
     
 
 @transform_pandas(
