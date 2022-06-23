@@ -474,8 +474,9 @@ def start_equal_end(pf_visits):
         pf_visits
         .select('person_id', 'first_COVID_hospitalization_start_date', 'first_COVID_hospitalization_end_date')
         .filter(F.col('first_COVID_hospitalization_start_date').isNotNull() & 
-                F.col('first_COVID_hospitalization_end_date').isNotNull()   &
-                ('first_COVID_hospitalization_start_date' == 'first_COVID_hospitalization_end_date')
+                F.col('first_COVID_hospitalization_end_date').isNotNull()  
+                # &
+                # ('first_COVID_hospitalization_start_date' == 'first_COVID_hospitalization_end_date')
         )
     )   
 
