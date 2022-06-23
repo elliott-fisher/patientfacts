@@ -465,10 +465,19 @@ def pf_visits( microvisit_to_macrovisit_lds, our_concept_sets, concept_set_membe
     return pf_er_hosp_agg_df
 
 @transform_pandas(
-    Output(rid="ri.vector.main.execute.e428522c-05c9-4cd5-a3e3-ec9e57800cec"),
+    Output(rid="ri.foundry.main.dataset.edd6a8bf-a48a-4b17-bc30-67ce99a94b15"),
     pf_visits=Input(rid="ri.foundry.main.dataset.c4d2279d-88e2-4360-90f2-43df60f1961f")
 )
-def unnamed(pf_visits):
+def start_equal_end(pf_visits):
+
+    return (
+        pf_visits
+        .select('person_id', 'first_COVID_hospitalization_start_date', 'first_COVID_hospitalization_end_date')
+        .filter(F.col('first_COVID_hospitalization_start_date').isnotNull() & 
+                F.col('first_COVID_hospitalization_end_date').isnotNull()   &
+                F.col('first_COVID_hospitalization_start_date') == F.col('first_COVID_hospitalization_end_date')
+        )
+    )            
     
 
 @transform_pandas(
