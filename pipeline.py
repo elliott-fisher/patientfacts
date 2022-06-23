@@ -291,7 +291,7 @@ def pf_visits( microvisit_to_macrovisit_lds, our_concept_sets, concept_set_membe
      - these values need to be discussed!!!  
     ================================================================================ 
     """
-    requires_lab_and_diagnosis = True
+    requires_lab_and_diagnosis = False
     num_days_before = 1
     num_days_after = 16
 
