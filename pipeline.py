@@ -446,7 +446,7 @@ def pf_visits( microvisit_to_macrovisit_lds, our_concept_sets, concept_set_membe
     If get_er_visits = True, then include ER visits. A value of False is default
     ================================================================================    
     """
-    if get_er_visits = True:
+    if get_er_visits == True:
         
         # Join er and hosp dataframes
         visits_df = df_hosp.join(ER_df,'person_id', 'outer')
