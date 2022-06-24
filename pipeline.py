@@ -29,7 +29,7 @@ def explore_m_to_m(microvisit_to_macrovisit_lds):
         .select('person_id', 'visit_concept_id', 'visit_concept_name', 'macrovisit_id',  'macrovisit_start_date', 'macrovisit_end_date')
         .where(F.col('macrovisit_id').isNotNull())
         .groupby('macrovisit_id')
-        .agg(F.countDistinct(F.col('macrovisit_start_date')))        
+        .agg(F.countDistinct(col('macrovisit_start_date')))        
     )
     
     return df
