@@ -324,13 +324,13 @@ def pf_visits( microvisit_to_macrovisit_lds, our_concept_sets, concept_set_membe
     """
     er_concept_names = list(
         our_concept_sets
-            .filter(our_concept_sets.ed_visit == 1)
+            .filter(our_concept_sets.er_only_visit == 1)
             .select('concept_set_name').toPandas()['concept_set_name']
     )    
     er_concept_ids = (
         list(concept_set_members
                 .where(( concept_set_members.concept_set_name.isin(er_concept_names)) & 
-                        (concept_set_members.is_most_recent_version == 'true'))
+                       ( concept_set_members.is_most_recent_version == 'true'))
                 .select('concept_id').toPandas()['concept_id']
         )
     )
