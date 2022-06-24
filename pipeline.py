@@ -291,13 +291,14 @@ def pf_visits( microvisit_to_macrovisit_lds, our_concept_sets, concept_set_membe
      - these values need to be discussed!!!  
     ================================================================================ 
     """
-    requires_lab_and_diagnosis = False
-    num_days_before = 1
-    num_days_after = 16
+    requires_lab_and_diagnosis  = False
+    num_days_before             = 1
+    num_days_after              = 16
+    get_er_visits               = False
 
     """
     ================================================================================
-    Get list of Emergency Dept Visit concept_set_name values from our spreadsheet 
+    Get list of Emergency Room Visit concept_set_name values from our spreadsheet 
     and use to create a list of associated concept_id values  
     ================================================================================
     """
@@ -317,7 +318,7 @@ def pf_visits( microvisit_to_macrovisit_lds, our_concept_sets, concept_set_membe
 
     """
     ================================================================================ 
-    Get Emergency Dept visits (null macrovisit_start_date values) and
+    Get Emergency Room visits (null macrovisit_start_date values) and
     create the following columns: 
     poslab_minus_ER_date      - used for hospitalizations that require *both*
                                 poslab and diagnosis
@@ -337,7 +338,7 @@ def pf_visits( microvisit_to_macrovisit_lds, our_concept_sets, concept_set_membe
     """
     ================================================================================
 
-    GET ED VISITS    
+    GET ER VISITS    
 
     ================================================================================
     """
@@ -439,30 +440,38 @@ def pf_visits( microvisit_to_macrovisit_lds, our_concept_sets, concept_set_membe
         )
     
 
-    # Join er and hosp dataframes
-    er_hosp_df = df_hosp.join(ER_df,'person_id', 'outer')
-
     """
     ================================================================================
     Collapse all values to one row per person using min start and end dates.
-
-    DISCUSS:
-    ??? Why is this the minimum End Date ???? 
+    If get_er_visits = True, then include ER visits. A value of False is default
     ================================================================================    
     """
-    er_hosp_agg_df = (
-        er_hosp_df
-        .groupby('person_id')
-        .agg(F.min('covid_ER_only_start_date').alias('first_covid_ER_only_start_date'),
-             F.min('covid_hospitalization_start_date').alias('first_COVID_hospitalization_start_date'),
-             F.min('covid_hospitalization_end_date').alias('first_COVID_hospitalization_end_date')
+    if get_er_visits = True:
+        
+        # Join er and hosp dataframes
+        visits_df = df_hosp.join(ER_df,'person_id', 'outer')
+    
+        visits_df = (
+            visits_df
+            .groupby('person_id')
+            .agg(F.min('covid_ER_only_start_date').alias('first_covid_ER_only_start_date'),
+                 F.min('covid_hospitalization_start_date').alias('first_COVID_hospitalization_start_date'),
+                 F.min('covid_hospitalization_end_date').alias('first_COVID_hospitalization_end_date')
+            )
         )
-    )
-
+    else:
+        visits_df = (
+           visits_df
+           .groupby('person_id')
+           .agg( F.min('covid_hospitalization_start_date').alias('first_COVID_hospitalization_start_date'),
+                 F.min('covid_hospitalization_end_date').alias('first_COVID_hospitalization_end_date')
+           )
+        )  
+         
     # Join in all person facts
-    pf_er_hosp_agg_df = pf_df.join(er_hosp_agg_df, 'person_id', 'left')    
+    pf_visits_df = pf_df.join(visits_df, 'person_id', 'left')    
 
-    return pf_er_hosp_agg_df
+    return pf_visits_df
 
 @transform_pandas(
     Output(rid="ri.foundry.main.dataset.edd6a8bf-a48a-4b17-bc30-67ce99a94b15"),
