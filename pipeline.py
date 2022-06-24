@@ -23,7 +23,16 @@ def COVID_POS_PERSON_FACT(pf_visits):
     microvisit_to_macrovisit_lds=Input(rid="ri.foundry.main.dataset.5af2c604-51e0-4afa-b1ae-1e5fa2f4b905")
 )
 def explore_m_to_m(microvisit_to_macrovisit_lds):
+
+    df = (
+        microvisit_to_macrovisit_lds
+        .select('person_id', 'visit_concept_id', 'visit_concept_name', 'macrovisit_id',  'macrovisit_start_date', 'macrovisit_end_date')
+        .where(F.col('macrovisit_id').isNotNull())
+        .groupby('macrovisit_id')
+        .agg(F.countDistinct('macrovisit_start_date'))        
+    )
     
+    return df
 
 @transform_pandas(
     Output(rid="ri.foundry.main.dataset.03e93e26-aa21-4f5d-b382-daaeea2a685e"),
@@ -259,19 +268,30 @@ def pf_sample(ALL_COVID_POS_PATIENTS):
     our_concept_sets=Input(rid="ri.foundry.main.dataset.f80a92e0-cdc4-48d9-b4b7-42e60d42d9e0"),
     pf_comorbidities=Input(rid="ri.foundry.main.dataset.f561b69a-b3e6-492e-a54e-88c5b4ae0b7e")
 )
+"""
+================================================================================
+Description:
+Adds hospitalization start and end dates and optionally Emergency Room visit 
+dates. (To get both sets of dates, set get_er_and_hosp_visits == True)  
+================================================================================ 
+"""
 def pf_visits( microvisit_to_macrovisit_lds, our_concept_sets, concept_set_members, pf_comorbidities):
 
     """
     ================================================================================
     Potential Parameters 
     --------------------
-    requires_lab_and_diagnosis
-    - Use for switching between using either:
-        - first poslab date AND diag date (= True)
-        - first poslab date OR diag date  (= False)
+    get_er_and_hosp_visits (boolean)
+    False - gets only hospitalizations
+    True  - gets hospitalizations and emergency room visits 
 
-    num_days_before / num_days_after
-     - these values need to be discussed!!!  
+    requires_lab_and_diagnosis (boolean)
+    True  - first poslab date AND diag date are used to associate with visits
+    False - first poslab date OR diag date are used to associate with visits
+
+    num_days_before / num_days_after (int)
+    Proximity in days between index date(s) and visit date
+    *** NEEDS DISCUSSION ***  
     ================================================================================ 
     """
     get_er_and_hosp_visits      = True    
@@ -349,8 +369,8 @@ def pf_visits( microvisit_to_macrovisit_lds, our_concept_sets, concept_set_membe
                              F.when(F.col('poslab_minus_ER_date').between(-num_days_after, num_days_before), 1).otherwise(0)
                 )
                 .withColumn("poslab_and_diag_associated_ER", 
-                             F.when( (F.col('poslab_associated_ER') == 1) & 
-                            (F.col('poslab_minus_diag_date').between(-num_days_after, num_days_before)), 1).otherwise(0)
+                             F.when((F.col('poslab_associated_ER') == 1) & 
+                                    (F.col('poslab_minus_diag_date').between(-num_days_after, num_days_before)), 1).otherwise(0)
                 )
                 .where(F.col('poslab_and_diag_associated_ER') == 1)
                 .withColumnRenamed('visit_start_date', 'covid_ER_only_start_date')
@@ -424,7 +444,7 @@ def pf_visits( microvisit_to_macrovisit_lds, our_concept_sets, concept_set_membe
                 )
                 .withColumn("poslab_and_diag_associated_hosp", 
                              F.when( (F.col('poslab_associated_hosp') == 1) & 
-                            (F.col('poslab_minus_diag_date').between(-num_days_after, num_days_before)), 1).otherwise(0)
+                                     (F.col('poslab_minus_diag_date').between(-num_days_after, num_days_before)), 1).otherwise(0)
                 )
                 .where(F.col('poslab_and_diag_associated_hosp') == 1)
                 .withColumnRenamed('macrovisit_start_date', 'covid_hospitalization_start_date')
@@ -448,8 +468,10 @@ def pf_visits( microvisit_to_macrovisit_lds, our_concept_sets, concept_set_membe
 
     """
     ================================================================================
-    Collapse all values to one row per person using min start and end dates.
-    If get_er_and_hosp_visits == True, then include ER visits. (False is default)
+    1. If get_er_and_hosp_visits == True, include ER and hospital visits, otherwise 
+       only include hospital visits.
+
+    2. Collapse all values to one row per person using min start and end dates.
     ================================================================================    
     """
     if get_er_and_hosp_visits == True:
@@ -474,7 +496,7 @@ def pf_visits( microvisit_to_macrovisit_lds, our_concept_sets, concept_set_membe
            )
         )  
          
-    # Join in all person facts
+    # Join in person facts
     pf_visits_df = pf_df.join(visits_df, 'person_id', 'left')    
 
     return pf_visits_df
