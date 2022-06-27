@@ -43,6 +43,13 @@ def explore_m_to_m(microvisit_to_macrovisit_lds):
     return df
 
 @transform_pandas(
+    Output(rid="ri.foundry.main.dataset.270a31a2-3536-43e0-88ea-967b49b31e19"),
+    pf_visits=Input(rid="ri.foundry.main.dataset.c4d2279d-88e2-4360-90f2-43df60f1961f")
+)
+def hosp_no_agg_visits(pf_visits):
+    return pf_visits
+
+@transform_pandas(
     Output(rid="ri.foundry.main.dataset.8da497ec-b422-4f44-913c-9f94b7fd3d49"),
     pf_visits=Input(rid="ri.foundry.main.dataset.c4d2279d-88e2-4360-90f2-43df60f1961f")
 )
@@ -522,13 +529,6 @@ def pf_visits( microvisit_to_macrovisit_lds, our_concept_sets, concept_set_membe
     pf_visits_df = pf_df.join(hosp_df, 'person_id', 'left')    
 
     return pf_visits_df
-
-@transform_pandas(
-    Output(rid="ri.foundry.main.dataset.270a31a2-3536-43e0-88ea-967b49b31e19"),
-    pf_visits=Input(rid="ri.foundry.main.dataset.c4d2279d-88e2-4360-90f2-43df60f1961f")
-)
-def unnamed(pf_visits):
-    
 
 @transform_pandas(
     Output(rid="ri.foundry.main.dataset.203392f0-b875-453c-88c5-77ca5223739e"),
