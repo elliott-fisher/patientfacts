@@ -145,7 +145,6 @@ def pf_after_covid_visits(pf_covid_visits, microvisit_to_macrovisit_lds):
         .withColumn('macrovisit_end_date',      F.first('macrovisit_end_date').over(w))
         .dropDuplicates()        
     )
-    
     print(has_df.count())
 
     no_df = (
@@ -159,7 +158,7 @@ def pf_after_covid_visits(pf_covid_visits, microvisit_to_macrovisit_lds):
     )
     print(no_df.count())
 
-    df = has_df.join(no_df, 'person_id', 'outer')
+    df = has_df.union(no_df)
     print(df.count())
 
     return df
