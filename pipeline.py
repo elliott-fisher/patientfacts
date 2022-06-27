@@ -415,7 +415,7 @@ def pf_covid_visits( microvisit_to_macrovisit_lds, our_concept_sets, concept_set
     # get first er visit within range of Coivd index date
     first_er_df = (
         er_df
-        .groupby('person_id')
+        .groupBy('person_id')
         .agg(F.min('covid_ER_only_start_date').alias('first_covid_er_only_start_date')),    
     )
 
@@ -519,9 +519,9 @@ def pf_covid_visits( microvisit_to_macrovisit_lds, our_concept_sets, concept_set
 
     
     if get_er_and_hosp_visits == True:
-        visits_df = first_hosp_df.join(first_er_df,'person_id', 'outer')
+        first_visits_df = first_hosp_df.join(first_er_df, 'person_id', 'outer')
     else:
-        visits_df = first_hosp_df
+        first_visits_df = first_hosp_df
     """
     else:
         w = Window.partitionBy('person_id').orderBy('covid_hospitalization_start_date')
@@ -545,10 +545,10 @@ def pf_covid_visits( microvisit_to_macrovisit_lds, our_concept_sets, concept_set
          
              
     # Join in person facts
-    pf_visits_df = pf_df.join(visits_df, 'person_id', 'left')    
+    pf_first_visits_df = pf_df.join(first_visits_df, 'person_id', 'left')    
   
 
-    return pf_visits_df
+    return pf_first_visits_df
 
 @transform_pandas(
     Output(rid="ri.foundry.main.dataset.628bfd8f-3d3c-4afb-b840-0daf4c07ac55"),
