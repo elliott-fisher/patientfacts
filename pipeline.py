@@ -374,7 +374,7 @@ def pf_visits( microvisit_to_macrovisit_lds, our_concept_sets, concept_set_membe
                 )
                 .where(F.col('poslab_and_diag_associated_ER') == 1)
                 .withColumnRenamed('visit_start_date', 'covid_ER_only_start_date')
-                .select('person_id', 'covid_ER_only_start_date')
+                .select('person_id', 'macrovisit_id', 'covid_ER_only_start_date')
                 .dropDuplicates()
         )     
     else:
@@ -385,7 +385,7 @@ def pf_visits( microvisit_to_macrovisit_lds, our_concept_sets, concept_set_membe
                 )
                 .where(F.col('poslab_or_diag_associated_ER') == 1)
                 .withColumnRenamed('visit_start_date', 'covid_ER_only_start_date')
-                .select('person_id', 'covid_ER_only_start_date')
+                .select('person_id', 'macrovisit_id', 'covid_ER_only_start_date')
                 .dropDuplicates()
         )        
 
@@ -449,7 +449,7 @@ def pf_visits( microvisit_to_macrovisit_lds, our_concept_sets, concept_set_membe
                 .where(F.col('poslab_and_diag_associated_hosp') == 1)
                 .withColumnRenamed('macrovisit_start_date', 'covid_hospitalization_start_date')
                 .withColumnRenamed('macrovisit_end_date',   'covid_hospitalization_end_date')
-                .select('person_id', 'covid_hospitalization_start_date', 'covid_hospitalization_end_date')
+                .select('person_id', 'macrovisit_id', 'covid_hospitalization_start_date', 'covid_hospitalization_end_date')
                 .dropDuplicates()
         )     
     else:
@@ -461,7 +461,7 @@ def pf_visits( microvisit_to_macrovisit_lds, our_concept_sets, concept_set_membe
                 .where(F.col('poslab_or_diag_associated_hosp') == 1)
                 .withColumnRenamed('macrovisit_start_date', 'covid_hospitalization_start_date')
                 .withColumnRenamed('macrovisit_end_date',   'covid_hospitalization_end_date')
-                .select('person_id', 'covid_hospitalization_start_date', 'covid_hospitalization_end_date')
+                .select('person_id', 'macrovisit_id', 'covid_hospitalization_start_date', 'covid_hospitalization_end_date')
                 .dropDuplicates()
         )
     
