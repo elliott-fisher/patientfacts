@@ -461,7 +461,7 @@ def pf_visits( microvisit_to_macrovisit_lds, our_concept_sets, concept_set_membe
                                   poslab or diagnosis
     ================================================================================                                  
     """
-    hosp_df = (
+    all_hosp_df = (
         pf_visits_df
             .where(pf_visits_df.macrovisit_start_date.isNotNull())
             .withColumn("poslab_minus_hosp_date", 
@@ -500,7 +500,7 @@ def pf_visits( microvisit_to_macrovisit_lds, our_concept_sets, concept_set_membe
     """
     if requires_lab_and_diagnosis == True:
         hosp_df = (
-            hosp_df
+            all_hosp_df
                 .withColumn("poslab_associated_hosp", 
                              F.when(F.col('poslab_minus_hosp_date').between(-num_days_after, num_days_before), 1).otherwise(0)
                 )
@@ -516,7 +516,7 @@ def pf_visits( microvisit_to_macrovisit_lds, our_concept_sets, concept_set_membe
         )     
     else:
         hosp_df = (
-            hosp_df
+            all_hosp_df
                 .withColumn("poslab_or_diag_associated_hosp", 
                              F.when(F.col('first_index_minus_hosp_date').between(-num_days_after, num_days_before), 1).otherwise(0)
                 )
@@ -533,7 +533,8 @@ def pf_visits( microvisit_to_macrovisit_lds, our_concept_sets, concept_set_membe
     1. If get_er_and_hosp_visits == True, include ER and hospital visits, otherwise 
        only include hospital visits.
 
-    2. Collapse all values to one row per person using min start and end dates.
+    2. Collapse all values to one row per person using min start and end dates. This
+       drops all but the first visit that comes within date range of the index date.
     ================================================================================    
     """
     if get_er_and_hosp_visits == True:
@@ -561,10 +562,7 @@ def pf_visits( microvisit_to_macrovisit_lds, our_concept_sets, concept_set_membe
              
     # Join in person facts
     pf_visits_df = pf_df.join(visits_df, 'person_id', 'left')    
-
-    # comment out! testing covid_ER_only_start_date
-    # not aggregated
-    # pf_visits_df = pf_df.join(hosp_df, 'person_id', 'left')    
+  
 
     return pf_visits_df
 
