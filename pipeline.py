@@ -589,8 +589,7 @@ def successive_macrovisits(microvisit_to_macrovisit_lds):
         )
         .filter(F.col('macrovisit_id').isNotNull())
         .filter(F.col('person_id') == "5506278855900148501")
-        .sort('macrovisit_start_date')
-    )
+    ).sort('macrovisit_id')
 
     return df
     
