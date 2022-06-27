@@ -391,8 +391,7 @@ def pf_visits( microvisit_to_macrovisit_lds, our_concept_sets, concept_set_membe
                 )
                 .where(F.col('poslab_and_diag_associated_ER') == 1)
                 .withColumnRenamed('visit_start_date', 'covid_ER_only_start_date')
-                .withColumnRenamed('macrovisit_id',    'macrovisit_er_id')                
-                .select('person_id', 'macrovisit_er_id', 'covid_ER_only_start_date')
+                .select('person_id', 'covid_ER_only_start_date')
                 .dropDuplicates()
         )     
     else:
@@ -402,9 +401,8 @@ def pf_visits( microvisit_to_macrovisit_lds, our_concept_sets, concept_set_membe
                              F.when(F.col('first_index_minus_ER_date').between(-num_days_after, num_days_before), 1).otherwise(0)
                 )
                 .where(F.col('poslab_or_diag_associated_ER') == 1)
-                .withColumnRenamed('visit_start_date', 'covid_ER_only_start_date')                
-                .withColumnRenamed('macrovisit_id',    'macrovisit_er_id')                
-                .select('person_id', 'macrovisit_er_id', 'covid_ER_only_start_date')
+                .withColumnRenamed('visit_start_date', 'covid_ER_only_start_date')                             
+                .select('person_id', 'covid_ER_only_start_date')
                 .dropDuplicates()
         )        
 
@@ -468,8 +466,7 @@ def pf_visits( microvisit_to_macrovisit_lds, our_concept_sets, concept_set_membe
                 .where(F.col('poslab_and_diag_associated_hosp') == 1)
                 .withColumnRenamed('macrovisit_start_date', 'covid_hospitalization_start_date')
                 .withColumnRenamed('macrovisit_end_date',   'covid_hospitalization_end_date')
-                .withColumnRenamed('macrovisit_id',         'macrovisit_hosp_id')
-                .select('person_id', 'macrovisit_id_hosp', 'covid_hospitalization_start_date', 'covid_hospitalization_end_date')
+                .select('person_id', 'macrovisit_id', 'covid_hospitalization_start_date', 'covid_hospitalization_end_date')
                 .dropDuplicates()
         )     
     else:
@@ -480,9 +477,8 @@ def pf_visits( microvisit_to_macrovisit_lds, our_concept_sets, concept_set_membe
                 )
                 .where(F.col('poslab_or_diag_associated_hosp') == 1)
                 .withColumnRenamed('macrovisit_start_date', 'covid_hospitalization_start_date')
-                .withColumnRenamed('macrovisit_end_date',   'covid_hospitalization_end_date')
-                .withColumnRenamed('macrovisit_id',         'macrovisit_hosp_id')                
-                .select('person_id', 'macrovisit_hosp_id', 'covid_hospitalization_start_date', 'covid_hospitalization_end_date')
+                .withColumnRenamed('macrovisit_end_date',   'covid_hospitalization_end_date')          
+                .select('person_id', 'macrovisit_id', 'covid_hospitalization_start_date', 'covid_hospitalization_end_date')
                 .dropDuplicates()
         )
     
@@ -521,10 +517,14 @@ def pf_visits( microvisit_to_macrovisit_lds, our_concept_sets, concept_set_membe
     # Join in person facts
     pf_visits_df = pf_df.join(visits_df, 'person_id', 'left')    
 
+    # comment out! testing covid_ER_only_start_date
+    # not aggregated
+    pf_visits_df = pf_df.join(hosp_df, 'person_id', 'left')    
+
     return pf_visits_df
 
 @transform_pandas(
-    Output(rid="ri.vector.main.execute.c263b5f6-0d5a-489b-a5f6-783292c2282d"),
+    Output(rid="ri.foundry.main.dataset.270a31a2-3536-43e0-88ea-967b49b31e19"),
     pf_visits=Input(rid="ri.foundry.main.dataset.c4d2279d-88e2-4360-90f2-43df60f1961f")
 )
 def unnamed(pf_visits):
