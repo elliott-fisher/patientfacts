@@ -116,7 +116,10 @@ Index Date is defined by first_poslab_or_diagnosis_date
 """
 def pf_after_covid_visits(pf_covid_visits, microvisit_to_macrovisit_lds):
 
-    macrovisits_df  = microvisit_to_macrovisit_lds.where(F.col('macrovisit_id').isNotNull())
+    macrovisits_df  = (
+        microvisit_to_macrovisit_lds
+        .select('person_id', 'macrovisit_id', 'macrovisit_start_date', 'macrovisit_end_date')
+        .where(F.col('macrovisit_id').isNotNull())
 
     pf_has_covid_hosp_df = (
         pf_covid_visits
@@ -132,7 +135,7 @@ def pf_after_covid_visits(pf_covid_visits, microvisit_to_macrovisit_lds):
 
     df = (
         pf_has_covid_hosp_df
-        .join(macrovisits_df, 'person_id', 'inner')
+        .join(macrovisits_df, 'person_id', 'left')
         .where(F.col('first_COVID_hospitalization_start_date') < F.col('macrovisit_start_date'))
     )
     
