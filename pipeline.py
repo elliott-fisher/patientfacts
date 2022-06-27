@@ -104,6 +104,13 @@ def macrovisit_multi_ip(microvisit_to_macrovisit_lds):
     microvisit_to_macrovisit_lds=Input(rid="ri.foundry.main.dataset.5af2c604-51e0-4afa-b1ae-1e5fa2f4b905"),
     pf_covid_visits=Input(rid="ri.foundry.main.dataset.c4d2279d-88e2-4360-90f2-43df60f1961f")
 )
+"""
+================================================================================
+Description:
+Adds hospitalization start and end dates for all hospitalization after the 
+the COVID-associated hospitalization  
+================================================================================ 
+"""
 def pf_after_covid_visits(pf_covid_visits, microvisit_to_macrovisit_lds):
 
     macrovisits_df  = microvisit_to_macrovisit_lds.where(F.col('macrovisit_id').isNotNull())
@@ -412,7 +419,7 @@ def pf_covid_visits( microvisit_to_macrovisit_lds, our_concept_sets, concept_set
                 .dropDuplicates()
         )        
 
-    # get first er visit within range of Coivd index date
+    # get first er visit within range of Covid index date
     first_er_df = (
         er_df
         .groupBy('person_id')
@@ -509,15 +516,10 @@ def pf_covid_visits( microvisit_to_macrovisit_lds, our_concept_sets, concept_set
 
     """
     ================================================================================
-    1. If get_er_and_hosp_visits == True, include ER and hospital visits, otherwise 
+    If get_er_and_hosp_visits == True, include ER and hospital visits, otherwise 
        only include hospital visits.
-
-    2. Collapse all values to one row per person using min start and end dates. This
-       drops all but the first visit that comes within date range of the index date.
     ================================================================================    
     """
-
-    
     if get_er_and_hosp_visits == True:
         first_visits_df = first_hosp_df.join(first_er_df, 'person_id', 'outer')
     else:
@@ -548,7 +550,8 @@ def pf_covid_visits( microvisit_to_macrovisit_lds, our_concept_sets, concept_set
     pf_first_visits_df = pf_df.join(first_visits_df, 'person_id', 'left')    
   
 
-    return pf_first_visits_df
+    #return pf_first_visits_df
+    return first_visits_df
 
 @transform_pandas(
     Output(rid="ri.foundry.main.dataset.628bfd8f-3d3c-4afb-b840-0daf4c07ac55"),
