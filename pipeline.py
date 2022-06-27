@@ -70,6 +70,31 @@ def hosp_visits(pf_visits):
     
 
 @transform_pandas(
+    Output(rid="ri.foundry.main.dataset.20f4ec4e-7cf2-4b4f-ba5f-7a28059f2105"),
+    microvisit_to_macrovisit_lds=Input(rid="ri.foundry.main.dataset.5af2c604-51e0-4afa-b1ae-1e5fa2f4b905")
+)
+def macrovisit_multi_ip(microvisit_to_macrovisit_lds):
+
+    df = (
+        microvisit_to_macrovisit_lds
+        .select(
+            'person_id',
+            'macrovisit_id', 
+            'visit_occurrence_id', 
+            'visit_concept_id',
+            'visit_concept_name', 
+            'visit_start_date', 
+            'visit_end_date',
+            'macrovisit_start_date',
+            'macrovisit_end_date'
+        )
+        .filter(F.where(F.col('macrovisit_id') == "4659206354756305685_1_969748783"))
+        .sort('visit_concept_id')
+
+    return df
+    
+
+@transform_pandas(
     Output(rid="ri.foundry.main.dataset.03e93e26-aa21-4f5d-b382-daaeea2a685e"),
     pf_locations=Input(rid="ri.foundry.main.dataset.628bfd8f-3d3c-4afb-b840-0daf4c07ac55")
 )
@@ -541,13 +566,6 @@ def pf_visits( microvisit_to_macrovisit_lds, our_concept_sets, concept_set_membe
     # pf_visits_df = pf_df.join(hosp_df, 'person_id', 'left')    
 
     return pf_visits_df
-
-@transform_pandas(
-    Output(rid="ri.vector.main.execute.4dddbdac-1d3c-463f-9f4d-f014583b8525"),
-    microvisit_to_macrovisit_lds=Input(rid="ri.foundry.main.dataset.5af2c604-51e0-4afa-b1ae-1e5fa2f4b905")
-)
-def unnamed(microvisit_to_macrovisit_lds):
-    
 
 @transform_pandas(
     Output(rid="ri.foundry.main.dataset.203392f0-b875-453c-88c5-77ca5223739e"),
