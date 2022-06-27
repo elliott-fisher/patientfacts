@@ -109,8 +109,12 @@ def pf_after_covid_visits(pf_covid_visits, microvisit_to_macrovisit_lds):
     macrovisits_df  = microvisit_to_macrovisit_lds.where(F.col('macrovisit_id').isNotNull())
     pf_df           = pf_covid_visits.select('person_id', 'macrovisit_id', 'first_COVID_hospitalization_start_date','first_COVID_hospitalization_end_date')
 
-    df = pf_df.join(macrovisits_df, 'person_id', 'left').where(F.col('first_COVID_hospitalization_start_date') < F.col('macrovisit_start_date'))
-
+    df = (
+        pf_df
+        .join(macrovisits_df, 'person_id', 'left')
+        .where(F.col('first_COVID_hospitalization_start_date') < F.col('macrovisit_start_date'))
+    )
+    
     return df
     
 
@@ -508,6 +512,8 @@ def pf_covid_visits( microvisit_to_macrovisit_lds, our_concept_sets, concept_set
             )
         )
     else:
+        w = Window.partitionBy('person_id').orderBy()
+
         visits_df = (
             hosp_df
             .groupby('person_id')
