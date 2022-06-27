@@ -136,9 +136,9 @@ def pf_after_covid_visits(pf_covid_visits, microvisit_to_macrovisit_lds):
 
     w = Window.partitionBy('person_id', 'macrovisit_id').orderBy('macrovisit_start_date')
 
-    df = (
+    has_df = (
         pf_has_covid_hosp_df
-        .join(macrovisits_df, 'person_id', 'left')
+        .join(macrovisits_df, 'person_id', 'inner')
         .where(F.col('first_COVID_hospitalization_start_date') < F.col('macrovisit_start_date'))
         .withColumn('macrovisit_id',            F.first('macrovisit_id').over(w))
         .withColumn('macrovisit_start_date',    F.first('macrovisit_start_date').over(w))
@@ -146,7 +146,20 @@ def pf_after_covid_visits(pf_covid_visits, microvisit_to_macrovisit_lds):
         .dropDuplicates()        
     )
     
-    return df
+
+    no_df = (
+        pf_no_covid_hosp_df
+        .join(macrovisits_df, 'person_id', 'inner')
+        .where(F.col('first_poslab_or_diagnosis_date') < F.col('macrovisit_start_date'))
+        .withColumn('macrovisit_id',            F.first('macrovisit_id').over(w))
+        .withColumn('macrovisit_start_date',    F.first('macrovisit_start_date').over(w))
+        .withColumn('macrovisit_end_date',      F.first('macrovisit_end_date').over(w))
+        .dropDuplicates()        
+    )
+
+    df = has_df.join(no_df, 'person_id', 'outer')
+
+    return has_df
     
 
 @transform_pandas(
