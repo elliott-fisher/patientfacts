@@ -584,7 +584,7 @@ def successive_macrovisits(microvisit_to_macrovisit_lds):
             'visit_concept_name', 
             'visit_start_date', 
             'visit_end_date',
-            '',
+            'macrovisit_start_date',
             'macrovisit_end_date'
         )
         .filter(F.col('macrovisit_id').isNotNull())
