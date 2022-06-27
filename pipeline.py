@@ -90,6 +90,7 @@ def macrovisit_multi_ip(microvisit_to_macrovisit_lds):
         )
         .filter(F.where(F.col('macrovisit_id') == "4659206354756305685_1_969748783"))
         .sort('visit_concept_id')
+    )
 
     return df
     
