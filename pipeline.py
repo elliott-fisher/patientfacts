@@ -32,6 +32,8 @@ def er_and_hosp_agg(pf_visits):
 )
 def explore_m_to_m(microvisit_to_macrovisit_lds):
 
+    # Counts of distinct dates within macrovisits --> looks like there are no variations
+    """
     df = (
         microvisit_to_macrovisit_lds
         .select('person_id', 'visit_concept_id', 'visit_concept_name', 'macrovisit_id',  'macrovisit_start_date', 'macrovisit_end_date')
@@ -39,7 +41,17 @@ def explore_m_to_m(microvisit_to_macrovisit_lds):
         .groupby('macrovisit_id')
         .agg(F.countDistinct(F.col('macrovisit_start_date')).alias('distinct_start_dates'))        
     )
-    
+    """
+
+    df = (
+        microvisit_to_macrovisit_lds
+        .select('person_id', 'visit_concept_id', 'visit_concept_name', 'macrovisit_id',  'macrovisit_start_date', 'macrovisit_end_date')
+        .where(F.col('macrovisit_id').isNotNull())
+        .where('concept_id' == 9201)        
+        .groupby('macrovisit_id')
+        .agg(F.count(F.col('concept_id')).alias('multi_inpatient_codes'))        
+    ) 
+       
     return df
 
 @transform_pandas(
@@ -526,7 +538,7 @@ def pf_visits( microvisit_to_macrovisit_lds, our_concept_sets, concept_set_membe
 
     # comment out! testing covid_ER_only_start_date
     # not aggregated
-    pf_visits_df = pf_df.join(hosp_df, 'person_id', 'left')    
+    # pf_visits_df = pf_df.join(hosp_df, 'person_id', 'left')    
 
     return pf_visits_df
 
