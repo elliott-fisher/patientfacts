@@ -3,7 +3,7 @@ from pyspark.sql import functions as F
 
 @transform_pandas(
     Output(rid="ri.foundry.main.dataset.97993cef-0004-43d1-9455-b28322562810"),
-    pf_visits=Input(rid="ri.foundry.main.dataset.c4d2279d-88e2-4360-90f2-43df60f1961f")
+    pf_covid_visits=Input(rid="ri.foundry.main.dataset.c4d2279d-88e2-4360-90f2-43df60f1961f")
 )
 """
 ================================================================================
@@ -11,7 +11,8 @@ Final node
 
 ================================================================================
 """
-def COVID_POS_PERSON_FACT(pf_visits):
+def COVID_POS_PERSON_FACT(pf_covid_visits):
+    pf_visits = pf_covid_visits
 
     pf_df = pf_visits
 
@@ -20,9 +21,10 @@ def COVID_POS_PERSON_FACT(pf_visits):
 
 @transform_pandas(
     Output(rid="ri.foundry.main.dataset.a2378300-74b4-452b-b3ff-8c5755819851"),
-    pf_visits=Input(rid="ri.foundry.main.dataset.c4d2279d-88e2-4360-90f2-43df60f1961f")
+    pf_covid_visits=Input(rid="ri.foundry.main.dataset.c4d2279d-88e2-4360-90f2-43df60f1961f")
 )
-def er_and_hosp_agg(pf_visits):
+def er_and_hosp_agg(pf_covid_visits):
+    pf_visits = pf_covid_visits
     return pf_visits
     
 
@@ -56,16 +58,18 @@ def explore_m_to_m(microvisit_to_macrovisit_lds):
 
 @transform_pandas(
     Output(rid="ri.foundry.main.dataset.270a31a2-3536-43e0-88ea-967b49b31e19"),
-    pf_visits=Input(rid="ri.foundry.main.dataset.c4d2279d-88e2-4360-90f2-43df60f1961f")
+    pf_covid_visits=Input(rid="ri.foundry.main.dataset.c4d2279d-88e2-4360-90f2-43df60f1961f")
 )
-def hosp_no_agg_visits(pf_visits):
+def hosp_no_agg_visits(pf_covid_visits):
+    pf_visits = pf_covid_visits
     return pf_visits
 
 @transform_pandas(
     Output(rid="ri.foundry.main.dataset.8da497ec-b422-4f44-913c-9f94b7fd3d49"),
-    pf_visits=Input(rid="ri.foundry.main.dataset.c4d2279d-88e2-4360-90f2-43df60f1961f")
+    pf_covid_visits=Input(rid="ri.foundry.main.dataset.c4d2279d-88e2-4360-90f2-43df60f1961f")
 )
-def hosp_visits(pf_visits):
+def hosp_visits(pf_covid_visits):
+    pf_visits = pf_covid_visits
     return pf_visits
     
 
@@ -91,6 +95,21 @@ def macrovisit_multi_ip(microvisit_to_macrovisit_lds):
         .filter(F.col('macrovisit_id') == "4659206354756305685_1_969748783")
         .sort('visit_concept_id')
     )
+
+    return df
+    
+
+@transform_pandas(
+    Output(rid="ri.foundry.main.dataset.503efade-9d86-453b-9071-804172e87222"),
+    microvisit_to_macrovisit_lds=Input(rid="ri.foundry.main.dataset.5af2c604-51e0-4afa-b1ae-1e5fa2f4b905"),
+    pf_covid_visits=Input(rid="ri.foundry.main.dataset.c4d2279d-88e2-4360-90f2-43df60f1961f")
+)
+def pf_after_covid_visits(pf_covid_visits, microvisit_to_macrovisit_lds):
+
+    macrovisits_df  = microvisit_to_macrovisit_lds.where(F.col('macrovisit_id').isNotNull())
+    pf_df           = pf_covid_visits.select('person_id', 'macrovisit_id', 'first_COVID_hospitalization_start_date','first_COVID_hospitalization_end_date')
+
+    df = pf_df.join(macrovisits_df, 'person_id', 'left').where(F.col('first_COVID_hospitalization_start_date') < F.col('macrovisit_start_date'))
 
     return df
     
@@ -261,68 +280,6 @@ def pf_comorbidities(visit_comobidities, pf_clean):
     
 
 @transform_pandas(
-    Output(rid="ri.foundry.main.dataset.628bfd8f-3d3c-4afb-b840-0daf4c07ac55"),
-    location=Input(rid="ri.foundry.main.dataset.efac41e8-cc64-49bf-9007-d7e22a088318"),
-    manifest=Input(rid="ri.foundry.main.dataset.b1e99f7f-5dcd-4503-985a-bbb28edc8f6f"),
-    person_lds=Input(rid="ri.foundry.main.dataset.50cae11a-4afb-457d-99d4-55b4bc2cbe66"),
-    pf_sample=Input(rid="ri.foundry.main.dataset.57d6f26d-f01a-454d-bb1c-93408d9fdd51")
-)
-"""
-Drops out antigen only records
-Adds in all person columns
-Gets person address info from location
-Gets treating institutions from manifest 
-"""
-def pf_locations(pf_sample, location, manifest, person_lds):
-
-    pf_df = pf_sample
-
-    # Drop rows with antibody only diagnosis 
-    covid_pos_no_antibody_diag_df = pf_df.filter(F.col('first_poslab_or_diagnosis_date').isNotNull())
-
-    with_person_df = (
-        covid_pos_no_antibody_diag_df
-            .join(
-                person_lds.select('person_id','year_of_birth','month_of_birth','day_of_birth',
-                                  'ethnicity_concept_name','race_concept_name','gender_concept_name',
-                                  'location_id','data_partner_id'),
-                covid_pos_no_antibody_diag_df.person_id == person_lds.person_id,
-                how = "left"
-        ).drop(person_lds.person_id)  
-    ).drop(covid_pos_no_antibody_diag_df.first_antigen_or_poslab_or_diagnosis_date)
-    
-
-    with_location_df = (
-        with_person_df.join(
-            location.select('location_id','city','state','zip','county'),
-            with_person_df.location_id == location.location_id,
-            how = "left"    
-        ).drop(location.location_id)
-    )
-
-    with_manifest_df = (
-        with_location_df.join(
-            manifest.select('data_partner_id','run_date','cdm_name','cdm_version','shift_date_yn','max_num_shift_days'),
-            with_location_df.data_partner_id == manifest.data_partner_id,
-            how = "left" 
-        ).drop(manifest.data_partner_id)
-
-    )
-
-    return with_manifest_df
-
-@transform_pandas(
-    Output(rid="ri.foundry.main.dataset.57d6f26d-f01a-454d-bb1c-93408d9fdd51"),
-    ALL_COVID_POS_PATIENTS=Input(rid="ri.foundry.main.dataset.d0f01e74-1ebb-46a5-b077-11864f9dd903")
-)
-def pf_sample(ALL_COVID_POS_PATIENTS):
-
-    proportion_of_patients_to_use = 1.
-
-    return ALL_COVID_POS_PATIENTS.sample(False, proportion_of_patients_to_use, 111)
-    
-
-@transform_pandas(
     Output(rid="ri.foundry.main.dataset.c4d2279d-88e2-4360-90f2-43df60f1961f"),
     concept_set_members=Input(rid="ri.foundry.main.dataset.e670c5ad-42ca-46a2-ae55-e917e3e161b6"),
     microvisit_to_macrovisit_lds=Input(rid="ri.foundry.main.dataset.5af2c604-51e0-4afa-b1ae-1e5fa2f4b905"),
@@ -336,7 +293,7 @@ Adds hospitalization start and end dates and optionally Emergency Room visit
 dates. (To get both sets of dates, set get_er_and_hosp_visits == True)  
 ================================================================================ 
 """
-def pf_visits( microvisit_to_macrovisit_lds, our_concept_sets, concept_set_members, pf_comorbidities):
+def pf_covid_visits( microvisit_to_macrovisit_lds, our_concept_sets, concept_set_members, pf_comorbidities):
 
     """
     ================================================================================
@@ -567,6 +524,68 @@ def pf_visits( microvisit_to_macrovisit_lds, our_concept_sets, concept_set_membe
     return pf_visits_df
 
 @transform_pandas(
+    Output(rid="ri.foundry.main.dataset.628bfd8f-3d3c-4afb-b840-0daf4c07ac55"),
+    location=Input(rid="ri.foundry.main.dataset.efac41e8-cc64-49bf-9007-d7e22a088318"),
+    manifest=Input(rid="ri.foundry.main.dataset.b1e99f7f-5dcd-4503-985a-bbb28edc8f6f"),
+    person_lds=Input(rid="ri.foundry.main.dataset.50cae11a-4afb-457d-99d4-55b4bc2cbe66"),
+    pf_sample=Input(rid="ri.foundry.main.dataset.57d6f26d-f01a-454d-bb1c-93408d9fdd51")
+)
+"""
+Drops out antigen only records
+Adds in all person columns
+Gets person address info from location
+Gets treating institutions from manifest 
+"""
+def pf_locations(pf_sample, location, manifest, person_lds):
+
+    pf_df = pf_sample
+
+    # Drop rows with antibody only diagnosis 
+    covid_pos_no_antibody_diag_df = pf_df.filter(F.col('first_poslab_or_diagnosis_date').isNotNull())
+
+    with_person_df = (
+        covid_pos_no_antibody_diag_df
+            .join(
+                person_lds.select('person_id','year_of_birth','month_of_birth','day_of_birth',
+                                  'ethnicity_concept_name','race_concept_name','gender_concept_name',
+                                  'location_id','data_partner_id'),
+                covid_pos_no_antibody_diag_df.person_id == person_lds.person_id,
+                how = "left"
+        ).drop(person_lds.person_id)  
+    ).drop(covid_pos_no_antibody_diag_df.first_antigen_or_poslab_or_diagnosis_date)
+    
+
+    with_location_df = (
+        with_person_df.join(
+            location.select('location_id','city','state','zip','county'),
+            with_person_df.location_id == location.location_id,
+            how = "left"    
+        ).drop(location.location_id)
+    )
+
+    with_manifest_df = (
+        with_location_df.join(
+            manifest.select('data_partner_id','run_date','cdm_name','cdm_version','shift_date_yn','max_num_shift_days'),
+            with_location_df.data_partner_id == manifest.data_partner_id,
+            how = "left" 
+        ).drop(manifest.data_partner_id)
+
+    )
+
+    return with_manifest_df
+
+@transform_pandas(
+    Output(rid="ri.foundry.main.dataset.57d6f26d-f01a-454d-bb1c-93408d9fdd51"),
+    ALL_COVID_POS_PATIENTS=Input(rid="ri.foundry.main.dataset.d0f01e74-1ebb-46a5-b077-11864f9dd903")
+)
+def pf_sample(ALL_COVID_POS_PATIENTS):
+
+    proportion_of_patients_to_use = 1.
+
+    return ALL_COVID_POS_PATIENTS.sample(False, proportion_of_patients_to_use, 111)
+    
+
+@transform_pandas(
     Output(rid="ri.foundry.main.dataset.bccdc3d7-e19c-4b15-aeef-9f33623cbac0"),
     microvisit_to_macrovisit_lds=Input(rid="ri.foundry.main.dataset.5af2c604-51e0-4afa-b1ae-1e5fa2f4b905")
 )
@@ -590,13 +609,6 @@ def successive_macrovisits(microvisit_to_macrovisit_lds):
     ).sort('macrovisit_start_date')
 
     return df
-    
-
-@transform_pandas(
-    Output(rid="ri.vector.main.execute.1fc62ca8-9eab-4ca9-b0e0-28c3267e2c8c"),
-    pf_visits=Input(rid="ri.foundry.main.dataset.c4d2279d-88e2-4360-90f2-43df60f1961f")
-)
-def unnamed(pf_visits):
     
 
 @transform_pandas(
