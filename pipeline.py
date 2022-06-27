@@ -120,6 +120,7 @@ def pf_after_covid_visits(pf_covid_visits, microvisit_to_macrovisit_lds):
         microvisit_to_macrovisit_lds
         .select('person_id', 'macrovisit_id', 'macrovisit_start_date', 'macrovisit_end_date')
         .where(F.col('macrovisit_id').isNotNull())
+    )    
 
     pf_has_covid_hosp_df = (
         pf_covid_visits
