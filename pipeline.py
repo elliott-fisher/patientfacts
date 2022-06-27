@@ -569,10 +569,30 @@ def pf_visits( microvisit_to_macrovisit_lds, our_concept_sets, concept_set_membe
     return pf_visits_df
 
 @transform_pandas(
-    Output(rid="ri.vector.main.execute.93b92c8d-9303-4496-bef4-4ee7e3fb3c4a"),
+    Output(rid="ri.foundry.main.dataset.bccdc3d7-e19c-4b15-aeef-9f33623cbac0"),
     microvisit_to_macrovisit_lds=Input(rid="ri.foundry.main.dataset.5af2c604-51e0-4afa-b1ae-1e5fa2f4b905")
 )
-def unnamed(microvisit_to_macrovisit_lds):
+def successive_macrovisits(microvisit_to_macrovisit_lds):
+
+    df = (
+        microvisit_to_macrovisit_lds
+        .select(
+            'person_id',
+            'macrovisit_id', 
+            'visit_occurrence_id', 
+            'visit_concept_id',
+            'visit_concept_name', 
+            'visit_start_date', 
+            'visit_end_date',
+            'macrovisit_start_date',
+            'macrovisit_end_date'
+        )
+        .filter(F.col('macrovisit_id').isNotNull())
+        .filter(F.col('person_id') == "5506278855900148501")
+        .sort('macrovisit_start_date')
+    )
+
+    return df
     
 
 @transform_pandas(
