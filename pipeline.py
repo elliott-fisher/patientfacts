@@ -43,6 +43,14 @@ def explore_m_to_m(microvisit_to_macrovisit_lds):
     return df
 
 @transform_pandas(
+    Output(rid="ri.foundry.main.dataset.8da497ec-b422-4f44-913c-9f94b7fd3d49"),
+    pf_visits=Input(rid="ri.foundry.main.dataset.c4d2279d-88e2-4360-90f2-43df60f1961f")
+)
+def hosp_visits(pf_visits):
+    return pf_visits
+    
+
+@transform_pandas(
     Output(rid="ri.foundry.main.dataset.03e93e26-aa21-4f5d-b382-daaeea2a685e"),
     pf_locations=Input(rid="ri.foundry.main.dataset.628bfd8f-3d3c-4afb-b840-0daf4c07ac55")
 )
@@ -514,31 +522,6 @@ def pf_visits( microvisit_to_macrovisit_lds, our_concept_sets, concept_set_membe
     pf_visits_df = pf_df.join(visits_df, 'person_id', 'left')    
 
     return pf_visits_df
-
-@transform_pandas(
-    Output(rid="ri.foundry.main.dataset.edd6a8bf-a48a-4b17-bc30-67ce99a94b15"),
-    pf_visits=Input(rid="ri.foundry.main.dataset.c4d2279d-88e2-4360-90f2-43df60f1961f")
-)
-def start_equal_end(pf_visits):
-
-    df = (
-        pf_visits
-        .select('person_id', 'first_COVID_hospitalization_start_date', 'first_COVID_hospitalization_end_date')
-        .filter(F.col('first_COVID_hospitalization_start_date').isNotNull() &
-                F.datediff(F.col('first_COVID_hospitalization_start_date'), F.col('first_COVID_hospitalization_end_date')) == 0
-        )
-    )   
-
-    return df
-         
-    
-
-@transform_pandas(
-    Output(rid="ri.vector.main.execute.49a60c84-ae53-488a-8d94-6d6ac386526f"),
-    pf_visits=Input(rid="ri.foundry.main.dataset.c4d2279d-88e2-4360-90f2-43df60f1961f")
-)
-def unnamed(pf_visits):
-    
 
 @transform_pandas(
     Output(rid="ri.foundry.main.dataset.203392f0-b875-453c-88c5-77ca5223739e"),
