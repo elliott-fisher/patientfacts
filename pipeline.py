@@ -302,7 +302,7 @@ def pf_visits( microvisit_to_macrovisit_lds, our_concept_sets, concept_set_membe
     *** NEEDS DISCUSSION ***  
     ================================================================================ 
     """
-    get_er_and_hosp_visits      = True    
+    get_er_and_hosp_visits      = False    
     requires_lab_and_diagnosis  = False
     num_days_before             = 1
     num_days_after              = 16
@@ -531,6 +531,13 @@ def start_equal_end(pf_visits):
 
     return df
          
+    
+
+@transform_pandas(
+    Output(rid="ri.vector.main.execute.49a60c84-ae53-488a-8d94-6d6ac386526f"),
+    pf_visits=Input(rid="ri.foundry.main.dataset.c4d2279d-88e2-4360-90f2-43df60f1961f")
+)
+def unnamed(pf_visits):
     
 
 @transform_pandas(
