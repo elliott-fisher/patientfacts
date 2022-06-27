@@ -519,7 +519,7 @@ def pf_covid_visits( microvisit_to_macrovisit_lds, our_concept_sets, concept_set
             .withColumn('macrovisit_id', F.first('macrovisit_id').over(w))
             .withColumn('first_COVID_hospitalization_start_date', F.first('covid_hospitalization_start_date').over(w))
             .withColumn('first_COVID_hospitalization_end_date',   F.first('covid_hospitalization_end_date').over(w))
-            .select('person_id', 'macrovisit_id', 'covid_hospitalization_start_date', 'covid_hospitalization_end_date')
+            .select('person_id', 'macrovisit_id', 'first_COVID_hospitalization_start_date', 'first_COVID_hospitalization_end_date')
             .dropDuplicates()
         )
         """
