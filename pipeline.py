@@ -490,13 +490,14 @@ def pf_visits( microvisit_to_macrovisit_lds, our_concept_sets, concept_set_membe
         )
     else:
         visits_df = (
-           hosp_df
-           .groupby('person_id')
-           .agg( F.min('covid_hospitalization_start_date').alias('first_COVID_hospitalization_start_date'),
+            hosp_df
+            .groupby('person_id')
+            .agg(F.min('covid_hospitalization_start_date').alias('first_COVID_hospitalization_start_date'),
                  F.min('covid_hospitalization_end_date').alias('first_COVID_hospitalization_end_date')
            )
         )  
          
+    visits_df = hosp_df.join(er_df,'person_id', 'outer')         
     # Join in person facts
     pf_visits_df = pf_df.join(visits_df, 'person_id', 'left')    
 
