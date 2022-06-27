@@ -47,7 +47,7 @@ def explore_m_to_m(microvisit_to_macrovisit_lds):
         microvisit_to_macrovisit_lds
         .select('person_id', 'visit_concept_id', 'visit_concept_name', 'macrovisit_id',  'macrovisit_start_date', 'macrovisit_end_date')
         .where(F.col('macrovisit_id').isNotNull())
-        .where('concept_id' == 9201)        
+        .where(F.col('concept_id') == 9201)        
         .groupby('macrovisit_id')
         .agg(F.count(F.col('concept_id')).alias('multi_inpatient_codes'))        
     ) 
