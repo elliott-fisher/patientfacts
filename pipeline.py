@@ -416,7 +416,7 @@ def pf_covid_visits( microvisit_to_macrovisit_lds, our_concept_sets, concept_set
     first_er_df = (
         er_df
         .groupBy('person_id')
-        .agg(F.min('covid_ER_only_start_date').alias('first_covid_er_only_start_date')),    
+        .agg(F.min('covid_ER_only_start_date').alias('first_covid_er_only_start_date'))    
     )
 
     """ 
