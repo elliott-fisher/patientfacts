@@ -412,6 +412,13 @@ def pf_covid_visits( microvisit_to_macrovisit_lds, our_concept_sets, concept_set
                 .dropDuplicates()
         )        
 
+    # get first er visit within range of Coivd index date
+    first_er_df = (
+        er_df
+        .groupby('person_id')
+        .agg(F.min('covid_ER_only_start_date').alias('first_covid_er_only_start_date')),    
+    )
+
     """ 
     ================================================================================    
     Get Hospitalization visits (non-null macrovisit_start_date values) and
@@ -488,6 +495,17 @@ def pf_covid_visits( microvisit_to_macrovisit_lds, our_concept_sets, concept_set
                 .dropDuplicates()
         )
     
+    # get first hospitalization period within Covid index date range 
+    w = Window.partitionBy('person_id').orderBy('covid_hospitalization_start_date')
+
+    first_hosp_df = (
+        hosp_df
+        .withColumn('macrovisit_id', F.first('macrovisit_id').over(w))
+        .withColumn('first_COVID_hospitalization_start_date', F.first('covid_hospitalization_start_date').over(w))
+        .withColumn('first_COVID_hospitalization_end_date',   F.first('covid_hospitalization_end_date').over(w))
+        .select('person_id', 'macrovisit_id', 'first_COVID_hospitalization_start_date', 'first_COVID_hospitalization_end_date')
+        .dropDuplicates()
+    )
 
     """
     ================================================================================
@@ -498,19 +516,13 @@ def pf_covid_visits( microvisit_to_macrovisit_lds, our_concept_sets, concept_set
        drops all but the first visit that comes within date range of the index date.
     ================================================================================    
     """
-    if get_er_and_hosp_visits == True:
-        
-        # Join er and hosp dataframes
-        er_and_hosp_df = hosp_df.join(er_df,'person_id', 'outer')
+
     
-        visits_df = (
-            er_and_hosp_df
-            .groupby('person_id')
-            .agg(F.min('covid_ER_only_start_date').alias('first_covid_ER_only_start_date'),
-                 F.min('covid_hospitalization_start_date').alias('first_COVID_hospitalization_start_date'),
-                 F.min('covid_hospitalization_end_date').alias('first_COVID_hospitalization_end_date')
-            )
-        )
+    if get_er_and_hosp_visits == True:
+        visits_df = first_hosp_df.join(first_er_df,'person_id', 'outer')
+    else:
+        visits_df = first_hosp_df
+    """
     else:
         w = Window.partitionBy('person_id').orderBy('covid_hospitalization_start_date')
 
@@ -522,7 +534,6 @@ def pf_covid_visits( microvisit_to_macrovisit_lds, our_concept_sets, concept_set
             .select('person_id', 'macrovisit_id', 'first_COVID_hospitalization_start_date', 'first_COVID_hospitalization_end_date')
             .dropDuplicates()
         )
-        """
         visits_df = (
             hosp_df
             .groupby('person_id')
