@@ -312,7 +312,7 @@ def pf_visits( microvisit_to_macrovisit_lds, our_concept_sets, concept_set_membe
     # Reduce microvisit_to_macrovisit_lds columns and joined to contain patients
     pf_visits_df = (
         microvisit_to_macrovisit_lds
-            .select('person_id','visit_start_date','visit_concept_id','macrovisit_start_date','macrovisit_end_date')
+            .select('person_id','visit_start_date','visit_concept_id', 'macrovisit_id', 'macrovisit_start_date','macrovisit_end_date')
             .join(pf1_df,'person_id','inner')  
     )
 
@@ -338,7 +338,8 @@ def pf_visits( microvisit_to_macrovisit_lds, our_concept_sets, concept_set_membe
 
     """
     ================================================================================ 
-    Get Emergency Room visits (null macrovisit_start_date values) and
+    Get Emergency Room visits (null macrovisit_start_date values and is in 
+    er_concept_ids) and
     create the following columns: 
     poslab_minus_ER_date      - used for hospitalizations that require *both*
                                 poslab and diagnosis
