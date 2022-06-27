@@ -550,8 +550,7 @@ def pf_covid_visits( microvisit_to_macrovisit_lds, our_concept_sets, concept_set
     pf_first_visits_df = pf_df.join(first_visits_df, 'person_id', 'left')    
   
 
-    #return pf_first_visits_df
-    return first_visits_df
+    return pf_first_visits_df
 
 @transform_pandas(
     Output(rid="ri.foundry.main.dataset.628bfd8f-3d3c-4afb-b840-0daf4c07ac55"),
