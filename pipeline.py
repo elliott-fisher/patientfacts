@@ -512,15 +512,23 @@ def pf_covid_visits( microvisit_to_macrovisit_lds, our_concept_sets, concept_set
             )
         )
     else:
-        w = Window.partitionBy('person_id').orderBy()
+        w = Window.partitionBy('person_id').orderBy('covid_hospitalization_start_date')
 
+        visits_df = (
+            hosp_df
+            .withColumn('macrovisit_id', F.first('macrovisit_id').over(w))
+            .withColumn('first_COVID_hospitalization_start_date', F.first('covid_hospitalization_start_date').over(w))
+            .withColumn('first_COVID_hospitalization_end_date', F.first('covid_hospitalization_end_date').over(w))            
+        )
+        """
         visits_df = (
             hosp_df
             .groupby('person_id')
             .agg(F.min('covid_hospitalization_start_date').alias('first_COVID_hospitalization_start_date'),
                  F.min('covid_hospitalization_end_date').alias('first_COVID_hospitalization_end_date')
            )
-        )  
+        )
+        """  
          
              
     # Join in person facts
