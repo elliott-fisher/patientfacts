@@ -88,7 +88,7 @@ def macrovisit_multi_ip(microvisit_to_macrovisit_lds):
             'macrovisit_start_date',
             'macrovisit_end_date'
         )
-        .filter(F.where(F.col('macrovisit_id') == "4659206354756305685_1_969748783"))
+        .filter(F.col('macrovisit_id') == "4659206354756305685_1_969748783")
         .sort('visit_concept_id')
     )
 
