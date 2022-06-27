@@ -134,10 +134,16 @@ def pf_after_covid_visits(pf_covid_visits, microvisit_to_macrovisit_lds):
         .filter(F.col('first_COVID_hospitalization_start_date').isNull())
     )
 
+    w = Window.partitionBy('person_id', 'macrovisit_id').orderBy('macrovisit_start_date')
+
     df = (
         pf_has_covid_hosp_df
         .join(macrovisits_df, 'person_id', 'left')
         .where(F.col('first_COVID_hospitalization_start_date') < F.col('macrovisit_start_date'))
+        .withColumn('macrovisit_id',            F.first('macrovisit_id').over(w))
+        .withColumn('macrovisit_start_date',    F.first('macrovisit_start_date').over(w))
+        .withColumn('macrovisit_end_date',      F.first('macrovisit_end_date').over(w))
+        .dropDuplicates()        
     )
     
     return df
