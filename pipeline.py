@@ -132,7 +132,7 @@ def pf_after_covid_visits(pf_covid_visits, microvisit_to_macrovisit_lds):
 
     df = (
         pf_has_covid_hosp_df
-        .join(macrovisits_df, 'person_id', 'left')
+        .join(macrovisits_df, 'person_id', 'inner')
         .where(F.col('first_COVID_hospitalization_start_date') < F.col('macrovisit_start_date'))
     )
     
