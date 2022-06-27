@@ -109,15 +109,29 @@ def macrovisit_multi_ip(microvisit_to_macrovisit_lds):
 Description:
 Adds hospitalization start and end dates for all hospitalization after the 
 the COVID-associated hospitalization  
+
+Index Date is defined by first_poslab_or_diagnosis_date
+*** DICSUSS or ADD FLEXIBILITY ----> Global Variables??
 ================================================================================ 
 """
 def pf_after_covid_visits(pf_covid_visits, microvisit_to_macrovisit_lds):
 
     macrovisits_df  = microvisit_to_macrovisit_lds.where(F.col('macrovisit_id').isNotNull())
-    pf_df           = pf_covid_visits.select('person_id', 'macrovisit_id', 'first_COVID_hospitalization_start_date','first_COVID_hospitalization_end_date')
+
+    pf_has_covid_hosp_df = (
+        pf_covid_visits
+        .select('person_id', 'first_poslab_or_diagnosis_date', 'first_COVID_hospitalization_start_date','first_COVID_hospitalization_end_date')
+        .filter(F.col('first_COVID_hospitalization_start_date').isNotNull())
+    )
+
+    pf_no_covid_hosp_df = (
+        pf_covid_visits
+        .select('person_id', 'first_poslab_or_diagnosis_date', 'first_COVID_hospitalization_start_date','first_COVID_hospitalization_end_date')
+        .filter(F.col('first_COVID_hospitalization_start_date').isNull())
+    )
 
     df = (
-        pf_df
+        pf_has_covid_hosp_df
         .join(macrovisits_df, 'person_id', 'left')
         .where(F.col('first_COVID_hospitalization_start_date') < F.col('macrovisit_start_date'))
     )
@@ -524,32 +538,13 @@ def pf_covid_visits( microvisit_to_macrovisit_lds, our_concept_sets, concept_set
         first_visits_df = first_hosp_df.join(first_er_df, 'person_id', 'outer')
     else:
         first_visits_df = first_hosp_df
-    """
-    else:
-        w = Window.partitionBy('person_id').orderBy('covid_hospitalization_start_date')
-
-        visits_df = (
-            hosp_df
-            .withColumn('macrovisit_id', F.first('macrovisit_id').over(w))
-            .withColumn('first_COVID_hospitalization_start_date', F.first('covid_hospitalization_start_date').over(w))
-            .withColumn('first_COVID_hospitalization_end_date',   F.first('covid_hospitalization_end_date').over(w))
-            .select('person_id', 'macrovisit_id', 'first_COVID_hospitalization_start_date', 'first_COVID_hospitalization_end_date')
-            .dropDuplicates()
-        )
-        visits_df = (
-            hosp_df
-            .groupby('person_id')
-            .agg(F.min('covid_hospitalization_start_date').alias('first_COVID_hospitalization_start_date'),
-                 F.min('covid_hospitalization_end_date').alias('first_COVID_hospitalization_end_date')
-           )
-        )
-        """  
          
              
     # Join in person facts
     pf_first_visits_df = pf_df.join(first_visits_df, 'person_id', 'left')    
   
 
+  
     return pf_first_visits_df
 
 @transform_pandas(
