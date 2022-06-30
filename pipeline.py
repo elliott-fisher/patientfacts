@@ -573,6 +573,15 @@ def pf_covid_visits( microvisit_to_macrovisit_lds, our_concept_sets, concept_set
     return pf_first_visits_df
 
 @transform_pandas(
+    Output(rid="ri.foundry.main.dataset.b0eef012-2041-4a78-9289-610f2661f10a"),
+    death=Input(rid="ri.foundry.main.dataset.d8cc2ad4-215e-4b5d-bc80-80ffb3454875"),
+    pf_covid_visits=Input(rid="ri.foundry.main.dataset.c4d2279d-88e2-4360-90f2-43df60f1961f")
+)
+def pf_death(pf_covid_visits, death):
+
+return pf_covid_visits.join(death, 'person_id', 'left')
+
+@transform_pandas(
     Output(rid="ri.foundry.main.dataset.628bfd8f-3d3c-4afb-b840-0daf4c07ac55"),
     location=Input(rid="ri.foundry.main.dataset.efac41e8-cc64-49bf-9007-d7e22a088318"),
     manifest=Input(rid="ri.foundry.main.dataset.b1e99f7f-5dcd-4503-985a-bbb28edc8f6f"),
@@ -658,13 +667,6 @@ def successive_macrovisits(microvisit_to_macrovisit_lds):
     ).sort('macrovisit_start_date')
 
     return df
-    
-
-@transform_pandas(
-    Output(rid="ri.vector.main.execute.694f7b10-5554-4370-980c-594bccf54caf"),
-    pf_covid_visits=Input(rid="ri.foundry.main.dataset.c4d2279d-88e2-4360-90f2-43df60f1961f")
-)
-def unnamed(pf_covid_visits):
     
 
 @transform_pandas(
