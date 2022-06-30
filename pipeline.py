@@ -661,6 +661,13 @@ def successive_macrovisits(microvisit_to_macrovisit_lds):
     
 
 @transform_pandas(
+    Output(rid="ri.vector.main.execute.694f7b10-5554-4370-980c-594bccf54caf"),
+    pf_covid_visits=Input(rid="ri.foundry.main.dataset.c4d2279d-88e2-4360-90f2-43df60f1961f")
+)
+def unnamed(pf_covid_visits):
+    
+
+@transform_pandas(
     Output(rid="ri.foundry.main.dataset.203392f0-b875-453c-88c5-77ca5223739e"),
     concept_set_members=Input(rid="ri.foundry.main.dataset.e670c5ad-42ca-46a2-ae55-e917e3e161b6"),
     condition_occurrence=Input(rid="ri.foundry.main.dataset.900fa2ad-87ea-4285-be30-c6b5bab60e86"),
