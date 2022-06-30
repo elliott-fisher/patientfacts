@@ -579,7 +579,7 @@ def pf_covid_visits( microvisit_to_macrovisit_lds, our_concept_sets, concept_set
 )
 def pf_death(pf_covid_visits, death):
 
-    return pf_covid_visits.join(death, 'person_id', 'left')
+    return pf_covid_visits.join(death.drop('data_partner_id'), 'person_id', 'left')
 
 @transform_pandas(
     Output(rid="ri.foundry.main.dataset.628bfd8f-3d3c-4afb-b840-0daf4c07ac55"),
