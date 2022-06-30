@@ -10,3 +10,4 @@ autoLayoutPaths: false
 useProjectScope: true
 tokenMode: "SCOPED_TOKEN"
 duplicatedFromWorkbook: null
+workbookType: "DEFAULT"
